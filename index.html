@@ -13099,7 +13099,7 @@ div#notebook {
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>On a single night in January 2019, approximately <a href="https://endhomelessness.org/homelessness-in-america/homelessness-statistics/state-of-homelessness-2020/">567,715 people</a> in the United States and 6,561 people in Maryland specifically were homeless. In Maryland, that's about 11 out of every 10,000 people who were homeless. It goes without saying that homelessness is an extremely pressing issue in our society, and the onset of COVID-19 has only made it worse.</p>
-<p>In this tutorial, we'll be dividing Maryland into its Continuums of Care (CoC), which are local planning bodies that coordinate homelessness services for particular geographic regions. We'll look at trends across these CoCs in terms of change in homelessness rates over time, homelessness rates in 2019 compared to average income and housing cost, and the number of beds/shelters available.</p>
+<p>In this tutorial, we'll be dividing Maryland into its Continuums of Care (CoC), which are local planning bodies that coordinate homelessness services for particular geographic regions. We'll look at trends across these CoCs in terms of change in homelessness rates over time, homelessness rates in 2019 compared to income and cost of living, and the number of beds available.</p>
 
 </div>
 </div>
@@ -13113,12 +13113,16 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[134]:</div>
+<div class="prompt input_prompt">In&nbsp;[168]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span> <span class="c1">#pandas</span>
-<span class="kn">import</span> <span class="nn">folium</span> <span class="c1">#visualizations</span>
-<span class="kn">from</span> <span class="nn">folium</span> <span class="kn">import</span> <span class="n">plugins</span>
+<span class="kn">import</span> <span class="nn">requests</span> <span class="c1">#web scraping</span>
+<span class="kn">from</span> <span class="nn">bs4</span> <span class="kn">import</span> <span class="n">BeautifulSoup</span> <span class="c1">#prettify content</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span> <span class="c1"># for plotting</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s1">&#39;ignore&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13131,7 +13135,7 @@ div#notebook {
 <div class="text_cell_render border-box-sizing rendered_html">
 <p>Maryland has 16 Continuums of Care, most of them separated by county with a few exceptions. The Mid Shore CoC contains Kent, Queen Anne's, Caroline, and Talbot county. The Lower Shore contains Dorchester, Wicomico, Worcester, and Somerset county. And the Southern Maryland CoC contains Charles, Calvert, and St. Mary's county.</p>
 <p>Every year, the United States Department of Housing and Urban Development (HUD) puts out an Annual Homeless Assessment Report. <a href="https://www.huduser.gov/portal/sites/default/files/pdf/2019-AHAR-Part-1.pdf">This report</a> details the key findings regarding 2019 national, state, and CoC-level estimates of homelessness. HUD also provides Point-In-Time (PIT) counts, which are annual counts of both sheltered and unsheltered people experiencing homelessness taken on one night in January, and Housing Inventory Counts (HIC), or a point-in-time inventory of beds and units at the following link: <a href="https://www.hudexchange.info/resource/5948/2019-ahar-part-1-pit-estimates-of-homelessness-in-the-us/">https://www.hudexchange.info/resource/5948/2019-ahar-part-1-pit-estimates-of-homelessness-in-the-us/</a></p>
-<p>So first, we download the Excel files for the 2007 - 2019 Point-In-Time Estimates by CoC and the 2007 - 2019 Housing Inventory Count by CoC. Since each year is on a different sheet in the Excel files and the data for 2019 is on the first sheet, when we import the data as dataframes, we'll lose the data for the other years. We want to take a look at how homelessness rates have changed overtime, so I made another Excel file with the Overall Homeless count per year from 2007 to 2019. All three Excel files can be found here.</p>
+<p>So first, we download the Excel files for the 2007 - 2019 Point-In-Time Estimates by CoC and the 2007 - 2019 Housing Inventory Count by CoC. Since each year is on a different sheet in the Excel files and the data for 2019 is on the first sheet, when we import the data as dataframes, we'll lose the data for the other years. We want to take a look at how homelessness rates have changed overtime, so I made another Excel file with the Overall Homeless count per year from 2007 to 2019, which can be found <a href="https://github.com/aroy2530/aroy2530.github.io/blob/master/2007-2019-HIC-by-CoC-Overall.xlsx">here</a>.</p>
 <p>Next, we read in the data as Pandas dataframes to start tidying the data. You'll notice that we need to specify "openpyxl" as our engine. This is because XLRD no longer supports opening anything other than XLS files.</p>
 
 </div>
@@ -13139,7 +13143,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[41]:</div>
+<div class="prompt input_prompt">In&nbsp;[156]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">pit</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s2">&quot;2019-Point-in-Time-Estimates-by-CoC.xlsx&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;openpyxl&quot;</span><span class="p">)</span>
@@ -13158,7 +13162,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[41]:</div>
+    <div class="prompt output_prompt">Out[156]:</div>
 
 
 
@@ -13339,7 +13343,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[22]:</div>
+<div class="prompt input_prompt">In&nbsp;[157]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">hic</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -13355,7 +13359,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[22]:</div>
+    <div class="prompt output_prompt">Out[157]:</div>
 
 
 
@@ -13536,7 +13540,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[23]:</div>
+<div class="prompt input_prompt">In&nbsp;[158]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">hic_overall</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
@@ -13552,7 +13556,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[23]:</div>
+    <div class="prompt output_prompt">Out[158]:</div>
 
 
 
@@ -13734,6 +13738,368 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
+<p>We also want to look at income per capita and cost of living for each CoC. We can go to the United States Bureau of Economic Analysis to get the real personal income by county in Maryland in 2019 (<a href="https://apps.bea.gov/iTable/iTable.cfm?reqid=70&amp;step=1&amp;isuri=1&amp;acrdn=6#reqid=70&amp;step=1&amp;isuri=1&amp;acrdn=6">https://apps.bea.gov/iTable/iTable.cfm?reqid=70&amp;step=1&amp;isuri=1&amp;acrdn=6#reqid=70&amp;step=1&amp;isuri=1&amp;acrdn=6</a>). We can then download the data as a CSV file and store it as a dataframe.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[176]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">income</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s2">&quot;MDIncome2019.csv&quot;</span><span class="p">)</span>
+<span class="n">income</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[176]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CAINC1 Personal Income Summary: Personal Income, Population, Per Capita Personal Income</th>
+      <th>Unnamed: 1</th>
+      <th>Unnamed: 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Per capita personal income (Dollars) 2/</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Bureau of Economic Analysis</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>County</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>GeoFips</td>
+      <td>GeoName</td>
+      <td>2019.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>24000</td>
+      <td>Maryland</td>
+      <td>64640.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>24001</td>
+      <td>Allegany, MD</td>
+      <td>41454.0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>24003</td>
+      <td>Anne Arundel, MD</td>
+      <td>69035.0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>24005</td>
+      <td>Baltimore, MD</td>
+      <td>62976.0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>24009</td>
+      <td>Calvert, MD</td>
+      <td>63976.0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>24011</td>
+      <td>Caroline, MD</td>
+      <td>46883.0</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>24013</td>
+      <td>Carroll, MD</td>
+      <td>64288.0</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>24015</td>
+      <td>Cecil, MD</td>
+      <td>49749.0</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>24017</td>
+      <td>Charles, MD</td>
+      <td>57774.0</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>24019</td>
+      <td>Dorchester, MD</td>
+      <td>47699.0</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>24021</td>
+      <td>Frederick, MD</td>
+      <td>64147.0</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>24023</td>
+      <td>Garrett, MD</td>
+      <td>47735.0</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>24025</td>
+      <td>Harford, MD</td>
+      <td>60266.0</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>24027</td>
+      <td>Howard, MD</td>
+      <td>79253.0</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>24029</td>
+      <td>Kent, MD</td>
+      <td>63141.0</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>24031</td>
+      <td>Montgomery, MD</td>
+      <td>90139.0</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>24033</td>
+      <td>Prince George's, MD</td>
+      <td>50625.0</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>24035</td>
+      <td>Queen Anne's, MD</td>
+      <td>66733.0</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>24037</td>
+      <td>St. Mary's, MD</td>
+      <td>58582.0</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>24039</td>
+      <td>Somerset, MD</td>
+      <td>31668.0</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>24041</td>
+      <td>Talbot, MD</td>
+      <td>74711.0</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>24043</td>
+      <td>Washington, MD</td>
+      <td>48650.0</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>24045</td>
+      <td>Wicomico, MD</td>
+      <td>42547.0</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>24047</td>
+      <td>Worcester, MD</td>
+      <td>60222.0</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>24510</td>
+      <td>Baltimore (Independent City), MD</td>
+      <td>53378.0</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>Legend / Footnotes:</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>2/ Per capita personal income was computed usi...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>Metropolitan Areas are defined (geographically...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>Note-- All dollar estimates are in thousands o...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>Last updated: November 17, 2020-- new statisti...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>To get the cost of living per CoC, we'll use BestPlaces (<a href="https://www.bestplaces.net/find/county.aspx?st=maryland">https://www.bestplaces.net/find/county.aspx?st=maryland</a>) to get the cost of living indices per county in Maryland. On BestPlaces, each county's cost of living can be easily reached by replacing the name of the county at the end of the URL. We can automate gathering data for every county in Maryland as seen below.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[160]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># list of counties to iterate through</span>
+<span class="n">counties</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Allegany&quot;</span><span class="p">,</span> <span class="s2">&quot;Anne Arundel&quot;</span><span class="p">,</span> <span class="s2">&quot;Baltimore&quot;</span><span class="p">,</span> <span class="s2">&quot;Calvert&quot;</span><span class="p">,</span> <span class="s2">&quot;Caroline&quot;</span><span class="p">,</span> <span class="s2">&quot;Carroll&quot;</span><span class="p">,</span> <span class="s2">&quot;Cecil&quot;</span><span class="p">,</span> <span class="s2">&quot;Charles&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;Dorchester&quot;</span><span class="p">,</span> <span class="s2">&quot;Frederick&quot;</span><span class="p">,</span> <span class="s2">&quot;Garrett&quot;</span><span class="p">,</span> <span class="s2">&quot;Harford&quot;</span><span class="p">,</span> <span class="s2">&quot;Howard&quot;</span><span class="p">,</span> <span class="s2">&quot;Kent&quot;</span><span class="p">,</span> <span class="s2">&quot;Montgomery&quot;</span><span class="p">,</span> <span class="s2">&quot;Prince_George&#39;s&quot;</span><span class="p">,</span> 
+            <span class="s2">&quot;Queen_Anne&#39;s&quot;</span><span class="p">,</span> <span class="s2">&quot;St._Mary&#39;s&quot;</span><span class="p">,</span> <span class="s2">&quot;Somerset&quot;</span><span class="p">,</span> <span class="s2">&quot;Talbot&quot;</span><span class="p">,</span> <span class="s2">&quot;Washington&quot;</span><span class="p">,</span> <span class="s2">&quot;Wicomico&quot;</span><span class="p">,</span> <span class="s2">&quot;Worcester&quot;</span><span class="p">,</span> <span class="s2">&quot;Baltimore_City&quot;</span><span class="p">]</span>
+
+<span class="c1"># where cost of living will be deposited</span>
+<span class="n">df_cost</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">county</span> <span class="ow">in</span> <span class="n">counties</span><span class="p">:</span>
+    <span class="c1"># where data from each county&#39;s table will be deposited</span>
+    <span class="n">county_data</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># GET request</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;https://www.bestplaces.net/cost_of_living/county/maryland/&quot;</span><span class="o">+</span><span class="n">county</span><span class="p">,</span> <span class="n">verify</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">soup</span> <span class="o">=</span> <span class="n">BeautifulSoup</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">content</span><span class="p">,</span> <span class="s2">&quot;html.parser&quot;</span><span class="p">)</span>
+    <span class="n">tbl</span> <span class="o">=</span> <span class="n">soup</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;table&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;mainContent_dgCostOfLiving&quot;</span><span class="p">)</span>
+    
+    <span class="k">for</span> <span class="n">tr</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;tr&#39;</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># extract first column in table</span>
+            <span class="n">county_data</span><span class="o">.</span><span class="n">append</span> <span class="p">(</span><span class="n">tr</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;td&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+        
+    <span class="c1"># extract cost of living index</span>
+    <span class="n">df_cost</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">county_data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    
+<span class="n">df_cost</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[160]:</div>
+
+
+
+
+<div class="output_text output_subarea output_execute_result">
+<pre>[&#39;76.9&#39;,
+ &#39;118.5&#39;,
+ &#39;105.7&#39;,
+ &#39;123.9&#39;,
+ &#39;92.6&#39;,
+ &#39;115.2&#39;,
+ &#39;105.8&#39;,
+ &#39;114.7&#39;,
+ &#39;86.4&#39;,
+ &#39;113.3&#39;,
+ &#39;87&#39;,
+ &#39;109.2&#39;,
+ &#39;134.8&#39;,
+ &#39;94.7&#39;,
+ &#39;139.4&#39;,
+ &#39;121.3&#39;,
+ &#39;121.5&#39;,
+ &#39;111.3&#39;,
+ &#39;81.1&#39;,
+ &#39;108.8&#39;,
+ &#39;94.5&#39;,
+ &#39;88.5&#39;,
+ &#39;103.7&#39;,
+ &#39;89.3&#39;]</pre>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
 <h2 id="Tidying-the-Data">Tidying the Data<a class="anchor-link" href="#Tidying-the-Data">&#182;</a></h2>
 </div>
 </div>
@@ -13748,7 +14114,7 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[33]:</div>
+<div class="prompt input_prompt">In&nbsp;[161]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Keep all rows, keep all columns up to Year</span>
@@ -13766,7 +14132,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[33]:</div>
+    <div class="prompt output_prompt">Out[161]:</div>
 
 
 
@@ -13896,11 +14262,10 @@ div#notebook {
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[118]:</div>
+<div class="prompt input_prompt">In&nbsp;[162]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">pit</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s2">&quot;2019-Point-in-Time-Estimates-by-CoC.xlsx&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;openpyxl&quot;</span><span class="p">)</span>
-<span class="c1"># Keep only Maryland CoC rows</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Keep only Maryland CoC rows</span>
 <span class="n">pit</span> <span class="o">=</span> <span class="n">pit</span><span class="p">[</span><span class="mi">163</span><span class="p">:</span><span class="mi">179</span><span class="p">]</span>
 <span class="c1"># Keep only necessary columns</span>
 <span class="n">pit</span> <span class="o">=</span> <span class="n">pit</span><span class="p">[[</span><span class="s2">&quot;CoC Number&quot;</span><span class="p">,</span> <span class="s2">&quot;CoC Name&quot;</span><span class="p">,</span> <span class="s2">&quot;Overall Homeless, 2019&quot;</span><span class="p">,</span> 
@@ -13918,7 +14283,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[118]:</div>
+    <div class="prompt output_prompt">Out[162]:</div>
 
 
 
@@ -14091,20 +14456,19 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<p>Last, we'll look at the 2019 HIC data. Once again, we only want the data for the Maryland CoCs. However, since we'll only be looking at the Total Year-Round Beds in 2019, we can merge the PIT dataframe with that column in the HIC dataframe. We can also then rename the dataframe to md_2019.</p>
+<p>Now we'll look at the 2019 HIC data. Once again, we only want the data for the Maryland CoCs. However, since we'll only be looking at the Total Year-Round Beds in 2019, we can merge the PIT dataframe with that column in the HIC dataframe. We can also then rename the dataframe to md_2019.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[123]:</div>
+<div class="prompt input_prompt">In&nbsp;[163]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">hic</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_excel</span><span class="p">(</span><span class="s2">&quot;2019-Housing-Inventory-Count-by-CoC.xlsx&quot;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s2">&quot;openpyxl&quot;</span><span class="p">)</span>
-
-<span class="c1"># Keep only Maryland CoC rows and Total Beds column</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Keep only Maryland CoC rows and Total Beds column</span>
 <span class="n">total_beds</span> <span class="o">=</span> <span class="n">hic</span><span class="p">[</span><span class="s2">&quot;Total Beds (ES, TH, SH)&quot;</span><span class="p">][</span><span class="mi">164</span><span class="p">:</span><span class="mi">180</span><span class="p">]</span>
+
 <span class="c1"># Change indices for total_beds to match pit to allow for smoothly adding new column</span>
 <span class="n">pit</span><span class="p">[</span><span class="s2">&quot;Total Beds&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">total_beds</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:]</span><span class="o">.</span><span class="n">values</span>
 
@@ -14122,7 +14486,7 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[123]:</div>
+    <div class="prompt output_prompt">Out[163]:</div>
 
 
 
@@ -14312,26 +14676,57 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="3.-Data-Exploration/Graph-Visualization">3. Data Exploration/Graph Visualization<a class="anchor-link" href="#3.-Data-Exploration/Graph-Visualization">&#182;</a></h1>
-</div>
-</div>
-</div>
-<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
-</div><div class="inner_cell">
-<div class="text_cell_render border-box-sizing rendered_html">
-<p>Great! Our data is all tidied up and in two dataframes: hic_overall, which contains the Overall Homeless count per Maryland CoC from 2007 to 2019, and md_2019, which has the total overall homeless count, sheltered count, unsheltered count, and total bed count. Let's start by visualizing the change in overall homelessness over the years.</p>
-<p>We'll use Folium to generate a map of Maryland, and then</p>
+<p>For the income dataframe, we'll drop the first and last few rows. We'll also drop the first column, rename the other two columns, and add in the data from df_cost to make a finance dataframe.</p>
+<p>If you will recall, some of our counties are grouped together for CoCs. We'll take an average income and cost of living for those counties and add them to our dataframe, deleting the counties that go in those CoCs.</p>
 
 </div>
 </div>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[131]:</div>
+<div class="prompt input_prompt">In&nbsp;[179]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">map_hic</span> <span class="o">=</span> <span class="n">folium</span><span class="o">.</span><span class="n">Map</span><span class="p">(</span><span class="n">location</span><span class="o">=</span><span class="p">[</span><span class="mf">38.80482</span><span class="p">,</span> <span class="o">-</span><span class="mf">77.236965</span><span class="p">],</span> <span class="n">zoom_start</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
-<span class="n">map_hic</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Drop unnecessary column and rows</span>
+<span class="n">income</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">29</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">33</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">income</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;CAINC1 Personal Income Summary: Personal Income, Population, Per Capita Personal Income&quot;</span><span class="p">],</span> 
+            <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Rename columns</span>
+<span class="n">income</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Unnamed: 1&quot;</span><span class="p">:</span> <span class="s2">&quot;CoC&quot;</span><span class="p">,</span> <span class="s2">&quot;Unnamed: 2&quot;</span><span class="p">:</span> <span class="s2">&quot;Income Per Capita&quot;</span><span class="p">},</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Convert cost of living values to floats</span>
+<span class="c1"># Change indices for total_beds to match pit to allow for smoothly adding new column</span>
+<span class="n">df_cost</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">df_cost</span><span class="p">))</span>
+<span class="n">income</span><span class="p">[</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_cost</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:]</span><span class="o">.</span><span class="n">values</span>
+
+<span class="n">finances</span> <span class="o">=</span> <span class="n">income</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1">## Now we combine counties</span>
+<span class="c1"># Mid Shore (Kent, Queen Anne&#39;s, Caroline, Talbot)</span>
+<span class="n">ms_income</span> <span class="o">=</span> <span class="p">(</span><span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">13</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">]</span> <span class="o">+</span> 
+    <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">4</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">19</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">])</span><span class="o">/</span><span class="mi">4</span>
+<span class="n">ms_CoL</span> <span class="o">=</span> <span class="p">(</span><span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">13</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">16</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">+</span> 
+    <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">4</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">19</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">])</span><span class="o">/</span><span class="mi">4</span>
+<span class="n">finances</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">24</span><span class="p">]</span><span class="o">=</span><span class="p">(([</span><span class="s2">&quot;Mid Shore&quot;</span><span class="p">,</span> <span class="n">ms_income</span><span class="p">,</span> <span class="n">ms_CoL</span><span class="p">]))</span>
+
+<span class="c1"># Lower Shore (Dorchester, Wicomico, Somerset, Worcester)</span>
+<span class="n">ls_income</span> <span class="o">=</span> <span class="p">(</span><span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">21</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">]</span> <span class="o">+</span> 
+    <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">18</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">22</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">])</span><span class="o">/</span><span class="mi">4</span>
+<span class="n">ls_CoL</span> <span class="o">=</span> <span class="p">(</span><span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">8</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">21</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">+</span> 
+    <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">18</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">22</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">])</span><span class="o">/</span><span class="mi">4</span>
+<span class="n">finances</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">25</span><span class="p">]</span><span class="o">=</span><span class="p">(([</span><span class="s2">&quot;Lower Shore&quot;</span><span class="p">,</span> <span class="n">ls_income</span><span class="p">,</span> <span class="n">ls_CoL</span><span class="p">]))</span>
+
+<span class="c1"># Southern MD (Charles, Calvert, St. Mary&#39;s)</span>
+<span class="n">sm_income</span> <span class="o">=</span> <span class="p">(</span><span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">]</span> <span class="o">+</span> 
+    <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">17</span><span class="p">][</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span>
+<span class="n">sm_CoL</span> <span class="o">=</span> <span class="p">(</span><span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">7</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">]</span> <span class="o">+</span> 
+    <span class="n">finances</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">17</span><span class="p">][</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">])</span><span class="o">/</span><span class="mi">3</span>
+<span class="n">finances</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">26</span><span class="p">]</span><span class="o">=</span><span class="p">(([</span><span class="s2">&quot;Southern MD&quot;</span><span class="p">,</span> <span class="n">sm_income</span><span class="p">,</span> <span class="n">sm_CoL</span><span class="p">]))</span>
+
+<span class="n">finances</span><span class="o">.</span><span class="n">drop</span><span class="p">([</span><span class="mi">13</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">17</span><span class="p">],</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">finances</span> <span class="o">=</span> <span class="n">finances</span><span class="o">.</span><span class="n">reindex</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">23</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">26</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">24</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">25</span><span class="p">,</span><span class="mi">15</span><span class="p">,</span><span class="mi">14</span><span class="p">])</span>
+<span class="n">finances</span>
 </pre></div>
 
     </div>
@@ -14344,12 +14739,134 @@ div#notebook {
 
 <div class="output_area">
 
-    <div class="prompt output_prompt">Out[131]:</div>
+    <div class="prompt output_prompt">Out[179]:</div>
 
 
 
 <div class="output_html rendered_html output_subarea output_execute_result">
-<div style="width:100%;"><div style="position:relative;width:100%;height:0;padding-bottom:60%;"><span style="color:#565656">Make this Notebook Trusted to load map: File -> Trust Notebook</span><iframe src="about:blank" style="position:absolute;width:100%;height:100%;left:0;top:0;border:none !important;" data-html=PCFET0NUWVBFIGh0bWw+CjxoZWFkPiAgICAKICAgIDxtZXRhIGh0dHAtZXF1aXY9ImNvbnRlbnQtdHlwZSIgY29udGVudD0idGV4dC9odG1sOyBjaGFyc2V0PVVURi04IiAvPgogICAgCiAgICAgICAgPHNjcmlwdD4KICAgICAgICAgICAgTF9OT19UT1VDSCA9IGZhbHNlOwogICAgICAgICAgICBMX0RJU0FCTEVfM0QgPSBmYWxzZTsKICAgICAgICA8L3NjcmlwdD4KICAgIAogICAgPHNjcmlwdCBzcmM9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vbGVhZmxldEAxLjYuMC9kaXN0L2xlYWZsZXQuanMiPjwvc2NyaXB0PgogICAgPHNjcmlwdCBzcmM9Imh0dHBzOi8vY29kZS5qcXVlcnkuY29tL2pxdWVyeS0xLjEyLjQubWluLmpzIj48L3NjcmlwdD4KICAgIDxzY3JpcHQgc3JjPSJodHRwczovL21heGNkbi5ib290c3RyYXBjZG4uY29tL2Jvb3RzdHJhcC8zLjIuMC9qcy9ib290c3RyYXAubWluLmpzIj48L3NjcmlwdD4KICAgIDxzY3JpcHQgc3JjPSJodHRwczovL2NkbmpzLmNsb3VkZmxhcmUuY29tL2FqYXgvbGlicy9MZWFmbGV0LmF3ZXNvbWUtbWFya2Vycy8yLjAuMi9sZWFmbGV0LmF3ZXNvbWUtbWFya2Vycy5qcyI+PC9zY3JpcHQ+CiAgICA8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBzOi8vY2RuLmpzZGVsaXZyLm5ldC9ucG0vbGVhZmxldEAxLjYuMC9kaXN0L2xlYWZsZXQuY3NzIi8+CiAgICA8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBzOi8vbWF4Y2RuLmJvb3RzdHJhcGNkbi5jb20vYm9vdHN0cmFwLzMuMi4wL2Nzcy9ib290c3RyYXAubWluLmNzcyIvPgogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL21heGNkbi5ib290c3RyYXBjZG4uY29tL2Jvb3RzdHJhcC8zLjIuMC9jc3MvYm9vdHN0cmFwLXRoZW1lLm1pbi5jc3MiLz4KICAgIDxsaW5rIHJlbD0ic3R5bGVzaGVldCIgaHJlZj0iaHR0cHM6Ly9tYXhjZG4uYm9vdHN0cmFwY2RuLmNvbS9mb250LWF3ZXNvbWUvNC42LjMvY3NzL2ZvbnQtYXdlc29tZS5taW4uY3NzIi8+CiAgICA8bGluayByZWw9InN0eWxlc2hlZXQiIGhyZWY9Imh0dHBzOi8vY2RuanMuY2xvdWRmbGFyZS5jb20vYWpheC9saWJzL0xlYWZsZXQuYXdlc29tZS1tYXJrZXJzLzIuMC4yL2xlYWZsZXQuYXdlc29tZS1tYXJrZXJzLmNzcyIvPgogICAgPGxpbmsgcmVsPSJzdHlsZXNoZWV0IiBocmVmPSJodHRwczovL3Jhd2Nkbi5naXRoYWNrLmNvbS9weXRob24tdmlzdWFsaXphdGlvbi9mb2xpdW0vbWFzdGVyL2ZvbGl1bS90ZW1wbGF0ZXMvbGVhZmxldC5hd2Vzb21lLnJvdGF0ZS5jc3MiLz4KICAgIDxzdHlsZT5odG1sLCBib2R5IHt3aWR0aDogMTAwJTtoZWlnaHQ6IDEwMCU7bWFyZ2luOiAwO3BhZGRpbmc6IDA7fTwvc3R5bGU+CiAgICA8c3R5bGU+I21hcCB7cG9zaXRpb246YWJzb2x1dGU7dG9wOjA7Ym90dG9tOjA7cmlnaHQ6MDtsZWZ0OjA7fTwvc3R5bGU+CiAgICAKICAgICAgICAgICAgPG1ldGEgbmFtZT0idmlld3BvcnQiIGNvbnRlbnQ9IndpZHRoPWRldmljZS13aWR0aCwKICAgICAgICAgICAgICAgIGluaXRpYWwtc2NhbGU9MS4wLCBtYXhpbXVtLXNjYWxlPTEuMCwgdXNlci1zY2FsYWJsZT1ubyIgLz4KICAgICAgICAgICAgPHN0eWxlPgogICAgICAgICAgICAgICAgI21hcF9hZDE4ZDJmYjdiYWM0ZmY2OTNhZDFhODQzNjc4ZDE3NiB7CiAgICAgICAgICAgICAgICAgICAgcG9zaXRpb246IHJlbGF0aXZlOwogICAgICAgICAgICAgICAgICAgIHdpZHRoOiAxMDAuMCU7CiAgICAgICAgICAgICAgICAgICAgaGVpZ2h0OiAxMDAuMCU7CiAgICAgICAgICAgICAgICAgICAgbGVmdDogMC4wJTsKICAgICAgICAgICAgICAgICAgICB0b3A6IDAuMCU7CiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgIDwvc3R5bGU+CiAgICAgICAgCjwvaGVhZD4KPGJvZHk+ICAgIAogICAgCiAgICAgICAgICAgIDxkaXYgY2xhc3M9ImZvbGl1bS1tYXAiIGlkPSJtYXBfYWQxOGQyZmI3YmFjNGZmNjkzYWQxYTg0MzY3OGQxNzYiID48L2Rpdj4KICAgICAgICAKPC9ib2R5Pgo8c2NyaXB0PiAgICAKICAgIAogICAgICAgICAgICB2YXIgbWFwX2FkMThkMmZiN2JhYzRmZjY5M2FkMWE4NDM2NzhkMTc2ID0gTC5tYXAoCiAgICAgICAgICAgICAgICAibWFwX2FkMThkMmZiN2JhYzRmZjY5M2FkMWE4NDM2NzhkMTc2IiwKICAgICAgICAgICAgICAgIHsKICAgICAgICAgICAgICAgICAgICBjZW50ZXI6IFszOC44MDQ4MiwgLTc3LjIzNjk2NV0sCiAgICAgICAgICAgICAgICAgICAgY3JzOiBMLkNSUy5FUFNHMzg1NywKICAgICAgICAgICAgICAgICAgICB6b29tOiA4LAogICAgICAgICAgICAgICAgICAgIHpvb21Db250cm9sOiB0cnVlLAogICAgICAgICAgICAgICAgICAgIHByZWZlckNhbnZhczogZmFsc2UsCiAgICAgICAgICAgICAgICB9CiAgICAgICAgICAgICk7CgogICAgICAgICAgICAKCiAgICAgICAgCiAgICAKICAgICAgICAgICAgdmFyIHRpbGVfbGF5ZXJfNTkyNTQxMTIyMzExNDNjMDk2MmYwNjYwNmE4MDRiMmIgPSBMLnRpbGVMYXllcigKICAgICAgICAgICAgICAgICJodHRwczovL3tzfS50aWxlLm9wZW5zdHJlZXRtYXAub3JnL3t6fS97eH0ve3l9LnBuZyIsCiAgICAgICAgICAgICAgICB7ImF0dHJpYnV0aW9uIjogIkRhdGEgYnkgXHUwMDI2Y29weTsgXHUwMDNjYSBocmVmPVwiaHR0cDovL29wZW5zdHJlZXRtYXAub3JnXCJcdTAwM2VPcGVuU3RyZWV0TWFwXHUwMDNjL2FcdTAwM2UsIHVuZGVyIFx1MDAzY2EgaHJlZj1cImh0dHA6Ly93d3cub3BlbnN0cmVldG1hcC5vcmcvY29weXJpZ2h0XCJcdTAwM2VPRGJMXHUwMDNjL2FcdTAwM2UuIiwgImRldGVjdFJldGluYSI6IGZhbHNlLCAibWF4TmF0aXZlWm9vbSI6IDE4LCAibWF4Wm9vbSI6IDE4LCAibWluWm9vbSI6IDAsICJub1dyYXAiOiBmYWxzZSwgIm9wYWNpdHkiOiAxLCAic3ViZG9tYWlucyI6ICJhYmMiLCAidG1zIjogZmFsc2V9CiAgICAgICAgICAgICkuYWRkVG8obWFwX2FkMThkMmZiN2JhYzRmZjY5M2FkMWE4NDM2NzhkMTc2KTsKICAgICAgICAKPC9zY3JpcHQ+ onload="this.contentDocument.open();this.contentDocument.write(atob(this.getAttribute('data-html')));this.contentDocument.close();" allowfullscreen webkitallowfullscreen mozallowfullscreen></iframe></div></div>
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CoC</th>
+      <th>Income Per Capita</th>
+      <th>Cost of Living Index</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Allegany, MD</td>
+      <td>41454.000000</td>
+      <td>76.900000</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>Baltimore (Independent City), MD</td>
+      <td>53378.000000</td>
+      <td>89.300000</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>Harford, MD</td>
+      <td>60266.000000</td>
+      <td>109.200000</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Anne Arundel, MD</td>
+      <td>69035.000000</td>
+      <td>118.500000</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>Howard, MD</td>
+      <td>79253.000000</td>
+      <td>134.800000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Baltimore, MD</td>
+      <td>62976.000000</td>
+      <td>105.700000</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Carroll, MD</td>
+      <td>64288.000000</td>
+      <td>115.200000</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Cecil, MD</td>
+      <td>49749.000000</td>
+      <td>105.800000</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>Southern MD</td>
+      <td>60110.666667</td>
+      <td>116.633333</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Frederick, MD</td>
+      <td>64147.000000</td>
+      <td>113.300000</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>Garrett, MD</td>
+      <td>47735.000000</td>
+      <td>87.000000</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>Mid Shore</td>
+      <td>62867.000000</td>
+      <td>104.400000</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>Washington, MD</td>
+      <td>48650.000000</td>
+      <td>94.500000</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>Lower Shore</td>
+      <td>45534.000000</td>
+      <td>89.925000</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>Prince George's, MD</td>
+      <td>50625.000000</td>
+      <td>121.300000</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Montgomery, MD</td>
+      <td>90139.000000</td>
+      <td>139.400000</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 </div>
 
 </div>
@@ -14357,6 +14874,529 @@ div#notebook {
 </div>
 </div>
 
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="3.-Data-Exploration/Graph-Visualization">3. Data Exploration/Graph Visualization<a class="anchor-link" href="#3.-Data-Exploration/Graph-Visualization">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Great! Our data is all tidied up and in three dataframes: hic_overall, which contains the Overall Homeless count per Maryland CoC from 2007 to 2019, md_2019, which has the total overall homeless count, sheltered count, unsheltered count, and total bed count, and finances, which has the income per capita and cost of living per CoC.</p>
+<p>Let's start by visualizing the total number of homeless people by CoC via a stacked bar chart, using the data visualization library <a href="https://matplotlib.org/">matplotlib</a>. As a refresher, we'll be using the md_2019 dataframe below to do this.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[165]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">md_2019</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt output_prompt">Out[165]:</div>
+
+
+
+<div class="output_html rendered_html output_subarea output_execute_result">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>CoC Number</th>
+      <th>CoC Name</th>
+      <th>Overall Homeless, 2019</th>
+      <th>Sheltered Total Homeless, 2019</th>
+      <th>Unsheltered Homeless, 2019</th>
+      <th>Total Beds</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>163</th>
+      <td>MD-500</td>
+      <td>Cumberland/Allegany County CoC</td>
+      <td>145.0</td>
+      <td>108.0</td>
+      <td>37.0</td>
+      <td>124</td>
+    </tr>
+    <tr>
+      <th>164</th>
+      <td>MD-501</td>
+      <td>Baltimore CoC</td>
+      <td>2294.0</td>
+      <td>1914.0</td>
+      <td>380.0</td>
+      <td>2154</td>
+    </tr>
+    <tr>
+      <th>165</th>
+      <td>MD-502</td>
+      <td>Harford County CoC</td>
+      <td>228.0</td>
+      <td>205.0</td>
+      <td>23.0</td>
+      <td>169</td>
+    </tr>
+    <tr>
+      <th>166</th>
+      <td>MD-503</td>
+      <td>Annapolis/Anne Arundel County CoC</td>
+      <td>302.0</td>
+      <td>241.0</td>
+      <td>61.0</td>
+      <td>153</td>
+    </tr>
+    <tr>
+      <th>167</th>
+      <td>MD-504</td>
+      <td>Howard County CoC</td>
+      <td>201.0</td>
+      <td>129.0</td>
+      <td>72.0</td>
+      <td>113</td>
+    </tr>
+    <tr>
+      <th>168</th>
+      <td>MD-505</td>
+      <td>Baltimore County CoC</td>
+      <td>735.0</td>
+      <td>486.0</td>
+      <td>249.0</td>
+      <td>582</td>
+    </tr>
+    <tr>
+      <th>169</th>
+      <td>MD-506</td>
+      <td>Carroll County CoC</td>
+      <td>144.0</td>
+      <td>121.0</td>
+      <td>23.0</td>
+      <td>98</td>
+    </tr>
+    <tr>
+      <th>170</th>
+      <td>MD-507</td>
+      <td>Cecil County CoC</td>
+      <td>126.0</td>
+      <td>104.0</td>
+      <td>22.0</td>
+      <td>121</td>
+    </tr>
+    <tr>
+      <th>171</th>
+      <td>MD-508</td>
+      <td>Charles, Calvert, St.Mary's Counties CoC</td>
+      <td>306.0</td>
+      <td>192.0</td>
+      <td>114.0</td>
+      <td>159</td>
+    </tr>
+    <tr>
+      <th>172</th>
+      <td>MD-509</td>
+      <td>Frederick City &amp; County CoC</td>
+      <td>286.0</td>
+      <td>208.0</td>
+      <td>78.0</td>
+      <td>252</td>
+    </tr>
+    <tr>
+      <th>173</th>
+      <td>MD-510</td>
+      <td>Garrett County CoC</td>
+      <td>12.0</td>
+      <td>11.0</td>
+      <td>1.0</td>
+      <td>30</td>
+    </tr>
+    <tr>
+      <th>174</th>
+      <td>MD-511</td>
+      <td>Mid-Shore Regional CoC</td>
+      <td>164.0</td>
+      <td>146.0</td>
+      <td>18.0</td>
+      <td>90</td>
+    </tr>
+    <tr>
+      <th>175</th>
+      <td>MD-512</td>
+      <td>Hagerstown/Washington County CoC</td>
+      <td>249.0</td>
+      <td>164.0</td>
+      <td>85.0</td>
+      <td>221</td>
+    </tr>
+    <tr>
+      <th>176</th>
+      <td>MD-513</td>
+      <td>Wicomico, Somerset, Worcester Counties CoC</td>
+      <td>275.0</td>
+      <td>238.0</td>
+      <td>37.0</td>
+      <td>245</td>
+    </tr>
+    <tr>
+      <th>177</th>
+      <td>MD-600</td>
+      <td>Prince George's County CoC</td>
+      <td>447.0</td>
+      <td>374.0</td>
+      <td>73.0</td>
+      <td>374</td>
+    </tr>
+    <tr>
+      <th>178</th>
+      <td>MD-601</td>
+      <td>Montgomery County CoC</td>
+      <td>647.0</td>
+      <td>572.0</td>
+      <td>75.0</td>
+      <td>418</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[167]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">width</span> <span class="o">=</span> <span class="mf">0.50</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;CoC Name&quot;</span><span class="p">],</span> <span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;Sheltered Total Homeless, 2019&quot;</span><span class="p">],</span> <span class="n">width</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Sheltered&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">bar</span><span class="p">(</span><span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;CoC Name&quot;</span><span class="p">],</span> <span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;Unsheltered Homeless, 2019&quot;</span><span class="p">],</span> <span class="n">width</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;Sheltered Total Homeless, 2019&quot;</span><span class="p">],</span>
+       <span class="n">label</span> <span class="o">=</span> <span class="s2">&quot;Unsheltered&quot;</span><span class="p">)</span>
+
+<span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;People&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;CoCs&quot;</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;CoC Number&quot;</span><span class="p">]</span>
+<span class="n">xi</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Overall Homeless (Sheltered v Unsheltered)&quot;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABJoAAAJdCAYAAAB6VB2wAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjMuMywgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy/Il7ecAAAACXBIWXMAAAsTAAALEwEAmpwYAABMJklEQVR4nO3deZxXdaE//tfAAIrgPqDXyNIrcslcylRcMFNBltESzN20XNoMzQUVlDJxC7NVstI0cyNxCTO0q2kqWur1umXW130FRETWYZbz+8M785NYBDnDZwafz8fDx8M5c875vN+v+czMmRdnqSqKoggAAAAArKQOlR4AAAAAAKsHRRMAAAAApVA0AQAAAFAKRRMAAAAApVA0AQAAAFAKRRMAAAAApVA0AUA7du2112bffffN4MGDM2TIkJxyyil57bXXVslr/+QnP8nZZ5+dJPnc5z6XJ554YrF1TjvttFx22WWLLd9yyy3z1ltvtfoYlzausl1zzTW5/vrrkyTPPvtsjj322NTW1qa2tjaHHXZYHn744STJK6+8ku22226F93/44Ydn8uTJSZLRo0fnySefLG/w/2by5Mk5/PDDP/D2S/uab7fddnnllVc+0D7f+15bXu/N+uWXX87xxx//gV57eR133HG58cYbkyQnn3xynn322VZ9PQBoqxRNANBOXXDBBbnjjjty6aWX5rbbbsukSZOyyy675MADD8wbb7xR6eF9aLz66qu56aab8sUvfjFJ8q1vfSsHHHBAJk2alEmTJmXEiBE57rjj8vbbb5fyelOmTElRFKXs68Pitddey/PPP7/KXm/EiBE5/fTTfZ0A+FCqrvQAAIAV98Ybb+S6667L3XffnXXWWSdJ0qFDh3z+85/Pk08+mUsvvTR77rlnLrjggkyaNClJ8s4772TPPffMf//3f2fBggU5++yz8/rrr6e+vj5DhgzJV7/61bzyyis59NBDs/nmm+fVV1/NVVddlRtvvDH//d//nbq6usyfPz8jR47M3nvvXdpcrr/++lx11VXp0KFDNtxww5x55pn5+Mc/ntNOOy1dunTJE088kTfffDODBg3K+uuvnz//+c+ZPn16zjnnnPTr1y8LFy7MuHHj8tBDD6WxsTF9+/bN6NGj061bt0Ve56677sr48eNTX1+fNdZYIyNHjsx2222XZ599NqNGjcrChQtTFEWGDx+eQw89dKnL/92ll16a/fbbL1VVVUmS6dOnZ968eS2f/8xnPpMf/vCH6dixY5KksbExZ511Vp544om88847OfXUUzNw4MAkyfjx43PHHXekqakpm2yyScaMGZOePXu27Oviiy/OtGnTcvLJJ+fCCy/MZpttlrFjx+af//xn6uvr069fv5x66qmprq7OVlttlT333DP/+Mc/Mm7cuHTt2jVjx47N22+/ncbGxhx++OEZPnx4kuRHP/pRJk2alHXXXTebbrrpEr9OJ510Uvr27ZuvfOUrSd49m+6vf/1rfvjDH67Q1/uVV17JkUcemd133z2PPfZYZs2alRNPPDGDBw9eZubPPfdcDj/88EyfPj0bbrhhfvCDH6RHjx6ZOnXqEt/LzRobGzN69OhMnTo1X/nKV3LZZZflf/7nfzJu3LjMnz8/VVVVOf7447PHHnvkxhtvzA033JD58+enW7duueqqq/K73/0u1157bZqamrLuuuvmzDPPzOabb56pU6fmtNNOy7Rp0/If//EfmTFjRstr9urVK927d8+dd96Zvfbaa4XyAYB2rwAA2p3JkycX+++//xI/d+eddxa1tbVFU1NTscceexSPP/54URRFcfXVVxcnnXRSURRFcfjhhxd33nlnURRFsWDBguLwww8v/vCHPxQvv/xy0bt37+Khhx4qiqIoXnnlleLwww8v5s+fXxRFUdx6663F0KFDi6Ioih//+MfFd7/73aIoikVe571GjhxZ7LrrrsW+++67yH+9e/cuZsyYUUyZMqXYa6+9ihkzZhRFURQTJ04sBg0aVDQ1NRUjR44sDjjggGLhwoXFtGnTit69exe/+c1viqIoiiuuuKI46qijiqIoip/85CfF+eefXzQ1NRVFURQXXXRRMWbMmEXG9fzzzxdDhw4t3nrrraIoiuKf//xnscsuuxRz584tTj/99OLSSy8tiqIopk2bVpxwwglFY2PjUpe/V1NTU7HjjjsWL7/8csuySZMmFdtvv32xyy67FN/61reKq666qpg5c2ZRFEVLvpMnTy6KoijuuOOOYs899yyKoihuuumm4oQTTijq6+uLoiiK6667rjj66KOLoiiKww47rPjjH/+4WNannXZaSyYNDQ3FySefXPziF78oiqIoevfuXdx0001FURRFfX19MXjw4OLJJ58siqIo3nnnnWLQoEHFo48+WvzpT38qBg8eXMyePbuor68vjj322OKwww5b7Gv5wAMPtHzti6Iohg8fXtx///1L/Jr/6le/Wmz5tttuW7z88sstGdx1111FUbz7Xv7sZz9bFEWx1Mx//OMfF5/73Oda3idf+9rXip/+9KdFUSz7vbztttsWRVEUDz74YDFkyJCiKIri7bffLgYMGNDyNXvjjTeK/v37F6+++moxceLE4jOf+Uwxe/bsoiiK4q9//WtxyCGHFPPmzSuKoijuvffeYtCgQUVRFMXXv/714uKLLy6KoiheeOGFYtttty0mTpzYMt/f/va3xamnnrpYDgCwunNGEwC0Uw0NDUtcvnDhwlRVVaWqqirDhw/PTTfdlE9+8pO58cYbc8opp2TevHl56KGHMmvWrPzoRz9KksybNy//+Mc/svXWW6e6ujrbbrttkmSTTTZpOSvqxRdfzGOPPZa5c+eu0DiPPPLIlrNgmm255ZZJknvvvTeDBw/O+uuvnyTZf//9M3bs2JZ7+eyxxx7p1KlTampq0rVr1+y2225Jko9+9KMtl6LdfffdmT17dqZMmZIkqa+vzwYbbLDI691///2ZNm1ajjzyyJZlVVVVeemll7L33ntn5MiRefzxx9OvX7+MHj06HTp0WOry95o5c2Zmz56dj3zkIy3Lhg4dmr333juPPPJIHnrooUycODHjx49vuYdTp06dWs5g6tOnT8uZMH/+85/zxBNPZNiwYUmSpqamzJ8/f5nZ3n333XniiSdyww03JEkWLFiwyOe33377JMkLL7yQl156KWeccUbL5xYsWJC///3vefbZZ7P33nu3nAE2bNiwXHXVVYu91o477pi6uro88cQTWXPNNfPWW2+lX79+i63XfGbXv2tqakrHjh3T2NiYTp06Zffdd0+S9O3bt+VruazMd9lll5b3SZ8+ffLWW2+973t5Sf73f/8306dPzze+8Y1FxvzMM88kefe92ZzF3XffnRdffDEHHXRQy7qzZs3K22+/nSlTpmTkyJFJkk033TQ77rjjIq/Tq1ev3HLLLUscAwCszhRNANAObbvttnnxxRczffr01NTULPK5v/71ry03QR42bFg+//nP54ADDsjs2bOz4447Zs6cOSmKItddd13WXHPNJMlbb72VLl26ZObMmencuXOqq989RHjqqafy9a9/PUceeWR22WWXfOYzn8l3v/vd0uZRLOEeNkVRtJRonTt3XuRzzeN6r6amppxxxhktxcXcuXNTV1e32Dr9+vVb5DKv119/PT169EifPn1y++23Z8qUKXnggQfys5/9LNddd1322GOPJS7/6Ec/2rKPDh06pCiKNDU1pUOHDnn22Wdz00035eSTT87OO++cnXfeOSNGjMhRRx2V22+/PQMHDkynTp1atn9vKdPU1JSjjz46hxxySJJ3C8NZs2YtM7+mpqb86Ec/yuabb57k3csj37vPrl27Jnn38rG11157keLjzTffTPfu3fP9739/ka9D8yV+/665uLzlllvSqVOnDB8+fIml0nrrrbfY/ajmzJmTurq6rL322pk5c2Y6derUUiC9dx9LyzxZ9GtfVVXVkvuy3stL0tjYmM033zy/+93vWpZNnTo166+/fiZNmtSSWfJuvvvtt19OOeWUlo+nTZuWddZZp2UMzf79vdn8ngCADxu//QCgHerZs2cOP/zwfPvb387UqVNblk+cODF33HFHjjnmmJb1ttlmm5x11lkt9+Pp1q1btt122/z6179O8m45cfDBB+fOO+9c7HUeeuihbLXVVjnqqKOyww475M4770xjY2Np89h1111z2223tTyBbuLEicu8T9DS9nH11Vdn4cKFaWpqyplnnpkf/OAHi6yz00475f777295Etg999yTfffdN3V1dTnppJNy2223ZciQIRkzZky6deuW119/fanL32vdddfN2muvnVdffTVJsuGGG2bChAktT4hLkrfffjtvvvlm+vbt+77zuOGGGzJnzpwk79436dRTT11svY4dO7YUcbvuumuuuOKKFEWRhQsX5mtf+1p++9vfLrbNxz/+8XTp0qWlaHr99dczdOjQPPnkk9ltt90yefLkvPPOO2lqalrmWThf+MIXctddd+X222/P/vvvv8R1+vfvnz/+8Y8t78uiKHLllVfmM5/5TNZaa61lZrA8mb/X8r6XO3bsmPr6+iT/f0n70EMPJUmefvrpDBw4MNOmTVts/7vsskv+8Ic/tHzu2muvzZe+9KUkyW677dZyltprr72Wv/71r4ts+/LLL2ezzTZb5nwBYHXkjCYAaKdOOumk/O53v8vXvva1LFy4MAsXLswnP/nJXHfdddlkk01a1jvggAMyYsSIjB8/vmXZuHHj8r3vfS+1tbVZuHBhhg4dmn333Xexx88PHTo0d9xxRwYPHpxOnTqlX79+mTVrVksZsrJ22WWXHHnkkfnSl76UpqamrL/++rn00ktX6EyQr3/967ngggvyhS98IY2Njfmv//qvnHbaaYuss8UWW+Tss8/Ot7/97RRFkerq6owfPz5du3bN17/+9YwaNSrXX399OnbsmL322is77LBDNtxwwyUu/3cDBgzIvffem0MOOSTrrLNOrrzyylx00UW58MILs+aaa6Zz5875yle+kn79+i2W73sdcMABmTp1ar74xS+mqqoqG2+8cc4///zF1ttrr71y4okn5pxzzsmoUaMyduzY1NbWpr6+PjvvvHOOPvroxbbp3LlzLrnkkowdOza/+tWv0tDQkBEjRuTTn/50kuSZZ57JsGHDsvbaa6dPnz5LPRuopqYmffv2TUNDwyI3KX+vnXbaKcccc0yOPfbYJO9eote3b99cdNFFS517s6V9Lf72t78tdZvleS9vscUW6dixY4YPH57f/e53+fGPf5wLL7wwdXV1KYoiF1544SLfM8122223HHPMMfnyl7+cqqqqdOvWLT/96U9TVVWVMWPG5PTTT8+gQYOy0UYbpU+fPotse++99+awww573zkDwOqmqljSOesAACyXl19+OSNGjMjEiROXen8iPlxeeumlnHzyybn++uu9JwD40HHpHADASujVq1c+//nPt9xLCH74wx/mnHPOUTIB8KHkjCYAAAAASuGMJgAAAABKoWgCAAAAoBSKJgAAAABKoWgCAAAAoBTVlR5Aa5s5c26amtzvfIMNumXGjDmVHkbFyUEGzeQgg2ZykEEig2ZykEEzOcigmRxk0EwOMmjWoUNV1ltvraV+frUvmpqaCkXT/5HDu+Qgg2ZykEEzOcggkUEzOcigmRxk0EwOMmgmBxksD5fOAQAAAFAKRRMAAAAApVjtL50DAAAA2pfGxobMnDk9DQ0LKz2UFtOmdUhTU1Olh7HKdOjQMWuu2S3duq2Tqqqq5d5O0QQAAAC0KTNnTs8aa3TNWmtttEIlR2uqru6QhoYPR9FUFEUaGxsye/bbmTlzetZfv8dyb+vSOQAAAKBNaWhYmLXWWrvNlEwfNlVVVamu7pR1190gCxcuWKFtFU0AAABAm6Nkqryqqg5JVuxJe4omAAAAAErhHk0AAABAm9Z97TWzRpfyK4wFdQ2Z/c78913vz3/+7/z2t1ekoaExRdGUffYZkkMOOSLDh9fmJz+5NBtv/B/L9Xpjx34n22336QweXJvjjz8uP/nJpSs7hcXcdtukPProIxk16jul73t5KJoAAACANm2NLtWpPemW0vc76aL9Mvt91pk+fVp++tMf5je/uSZrrbV25s2bl29+89h89KObrtRrP/roIyu1fVulaAIAAABYirfffjsNDQ1ZsGBB1lpr7XTt2jWjR38nnTt3SZL8+te/zL/+9UwWLFiQ0aPPzic+sVVeeeXljBt3Xt55Z1a6dFkjJ554Snr37tOyzx/+8PtJkmOO+VJ++csr8+CDU3LZZT9PQ0NDNt54k4wcOSrrrLNuhg+vTd++W+Vf/3oml1zyqzz44JT87nfXpqmpyJZb9sm3vz0yXbp0yeTJf8iVV16Wtdbqlo022ihrrtm1Ilkl7tEEAAAAsFRbbNE7u+22e/bff98cc8wRueSSH6exsSkf+UivJMnHPrZZfv3razJ8+IG59tqrkiRjx47J17/+rVx++dU59dRRGTPmjEX2ecIJpyRJfvnLKzNz5sz8/Oc/zUUX/TS//vU12WGHnTJ+/E9a1t1pp51z7bU3ZubMmZk06eaMH395rrjimqy33vq59tqr8uab0zN+/I/zs5/9Mj//+eWZN2/eKkpmyZzRBAAAALAMJ598er785WPywANT8re/PZDjjjsqY8Z8L0nSv/9nkyQf//jmufvuuzJv3rw8/fTfc+65Z7dsP3/+/Mya9fYS9/33vz+ZqVPfyLe+9dUkSVNTY9Zee52Wz/ftu1WS5NFHH84rr7yc4447KknS0FCf3r375IknHstWW22d9dffIEkyYMCgPPLIQ6XOf0UomgAAAACWYsqU+zJ//rwMHLhPhgzZN0OG7Jvf//6m3Hrru/eM6tixY8u6RVGkqakpnTt3yRVXXNOyfNq0qYuUR+/V1NSYrbfeJhdccHGSpK6ubpGzkrp0efcSvcbGpnzuc3u1nA01b968NDY25pFH/pampqJl/feOpxJcOgcAAACwFGussUZ+/vOf5bXXXkvybpn0wgvPZYsttlzi+t26dctHPtIrt99+W5LkoYcezDe+cexi63Xs2DENDQ3p23erPPXUE3nppReTJFdc8atccsmPFlt/u+0+nb/85e7MnPlWiqLIRRedlwkTrsnWW2+bv//9iUyfPi1NTU25664/lTX1D8QZTQAAAABL8alPbZ8vf/mYnHzyiNTX1ydJdtyxX4466pjccccfl7jNmDHn5PvfPzfXXPObVFd3ytlnn5uqqqpF1tl11/458shDctllV+W0087KWWednqamxtTU9MxZZ5292D632KJ3jjrqmHzrW19NURTZYostc9hhR6ZLly454YRTcsIJX88aa6yZj33s4+WHsAKqiqIo3n+19mvGjDmLnEL2YVVT0z3Tp7/fQxtXf3KQQTM5yKCZHGSQyKCZHGTQTA4yaCYHGTRb1Tm88caL2WijTVs+7r72mlmjS/nnyiyoa8jsd+Yv17rV1R3S0NBU+hjaun//WnToUJUNNui21PWd0QQAAAC0abPfmR91X/vgHk0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlMJT5wAAAIA2bb11Oqe6c5fS99uwsC4zZy0sfb8fZoom2o2yfrDU1HT/wNv6IQQAALDqVXfukufGDit9v5uNmpjk/f/Ge/3113L88cflhhsmLbJ81123z333PbxCrzl8eG1+8pNLs/HG/7Fc648d+51st92nM3hwbY4//rj85CeXrtDrLY/bbpuURx99JKNGfWel96Voot1orR8sK2J5fwgBAABA2R599JFKD+F9KZoAAAAAPqDbbpuUv/51St5555289tqr+cxndsrJJ5+WadOm5uyzz8z8+fPToUNVRow4JVtt9ckkya9//cv861/PZMGCBRk9+ux84hNb5ZVXXs64ceflnXdmpUuXNXLiiaekd+8+La/zwx9+P0lyzDFfyi9/eWUefHBKLrvs52loaMjGG2+SkSNHZZ111s3w4bXp23er/Otfz+SSS36VBx+ckt/97to0NRXZcss++fa3R6ZLly6ZPPkPufLKy7LWWt2y0UYbZc01u5aSh5uBAwAAAKyEJ554PGPHXpgrr7wuU6bcm2ef/X+59dZbsvPOu+ayy67K1772rTz++P+2rP+xj22WX//6mgwffmCuvfaqJMnYsWPy9a9/K5dffnVOPXVUxow5Y5HXOOGEU5Ikv/zllZk5c2Z+/vOf5qKLfppf//qa7LDDThk//ict6+6008659tobM3PmzEyadHPGj788V1xxTdZbb/1ce+1VefPN6Rk//sf52c9+mZ///PLMmzevtCyc0QQAAACwDFVVi5+nUxRFqqqqkiSf/OTW6dp1rSTJf/zHJnnnnVnZfvsdMmrUqfnnP5/JzjvvmmHDvtiybf/+n02SfPzjm+fuu+/KvHnz8vTTf8+5557dss78+fMza9bbSxzP3//+ZKZOfSPf+tZXkyRNTY1Ze+11Wj7ft+9WSZJHH304r7zyco477qgkSUNDfXr37pMnnngsW221ddZff4MkyYABg/LIIw99kGgWo2gCAAAAWIa11+6euXPnLLJs5sy30r372kmSzv/24KqiKLL11tvmt7+dkClT7sudd96R226blB/+8JIkSceOHRdZt6mpKZ07d8kVV1zTsnzatKmLlEfv1dTUmK233iYXXHBxkqSurm6Rs5K6dHl3PI2NTfnc5/ZqORtq3rx5aWxszCOP/C1NTUXL+u8dz8py6RwAAADAMnTtulZ69fpo7r77zpZlv//9Tdl++x2Wus0ll/wot99+WwYNGpoTTxyZf/7zmaWu261bt3zkI71y++23JUkeeujBfOMbxy62XseOHdPQ0JC+fbfKU089kZdeejFJcsUVv8oll/xosfW32+7T+ctf7s7MmW+lKIpcdNF5mTDhmmy99bb5+9+fyPTp09LU1JS77vrTcmfxfpzRBAAAALRpDQvr/u8p4OXvd3l95zvn5IILzs2vf/2rNDTUZ/PNt8i3vz0yU6bcu8T1hw07MN/97ujcdtut6dChQ0466bRl7n/MmHPy/e+fm2uu+U2qqzvl7LPPbbk0r9muu/bPkUcekssuuyqnnXZWzjrr9DQ1NaampmfOOuvsxfa5xRa9c9RRx+Rb3/pqiqLIFltsmcMOOzJdunTJCSeckhNO+HrWWGPNfOxjH1/uHN5PVVEUxfuv1n7NmDFnkdPBPqxqarpn+vTZlR7GSqmp6Z7nxg6r6Bg2GzVxtcixvc+hDHKQQTM5yCCRQTM5yKCZHGTQTA4yaLaqc3jjjRez0UabrrLXWx7V1R3S0NBU6WGscv/+tejQoSobbNBtqeu7dA4AAACAUiiaAAAAACiFogkAAABoc1bzO/20Cx/ka6BoAgAAANqUDh06prGxodLD+NCrr1+Yjh1X7DlyiiYAAACgTVlzzW6ZPfvtFMWH7+bbbUFRFFm4sC5vvz093bqtu0LbrlgtBQAAANDKunVbJzNnTs/Uqa8kaRuX0HXo0CFNTR+e4qtjx+p0775e1lxzrRXaTtEEAAAAtClVVVVZf/0elR7GImpqumf69NmVHkab59I5AAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFK1aNP30pz/NkCFDMmTIkFx44YVJkilTpqS2tjYDBgzIxRdf3LLu008/nWHDhmXgwIEZNWpUGhoakiSvvfZaDj300Oyzzz752te+lrlz57bmkAEAAAD4gFqtaJoyZUruu+++3HTTTbn55pvz1FNP5dZbb80ZZ5yRSy65JLfddluefPLJ3HPPPUmSU045JWeeeWZuv/32FEWRCRMmJEm++93v5pBDDsnkyZOz1VZb5ZJLLmmtIQMAAACwElqtaKqpqclpp52Wzp07p1OnTtl8883zwgsvZNNNN02vXr1SXV2d2traTJ48Oa+++moWLFiQbbfdNkmy//77Z/Lkyamvr89DDz2UgQMHLrIcAAAAgLan1YqmLbbYoqU4euGFF3LbbbelqqoqNTU1Lev06NEjU6dOzbRp0xZZXlNTk6lTp2bmzJnp1q1bqqurF1kOAAAAQNtT3dov8K9//SvHHXdcRo4cmerq6jz//POLfL6qqipFUSy23bKWr4gNNui2YgNejdXUdK/0EFYLq0OOq8McyiAHGTSTgwwSGTSTgwyayUEGzeQgg2ZykMHyaNWi6ZFHHsm3vvWtnHHGGRkyZEj+9re/5c0332z5/LRp09KjR4/07NlzkeXTp09Pjx49sv7662fOnDlpbGxMx44dW5aviBkz5qSpafHC6sOmpqZ7pk+fXelhrJS28g29OuTY3udQBjnIoJkcZJDIoJkcZNBMDjJoJgcZNJODDJp16FC1zJN6Wu3Suddffz3f+MY3Mm7cuAwZMiRJss022+T555/Piy++mMbGxtx6663p379/Ntlkk3Tp0iWPPPJIkuTmm29O//7906lTp2y//fa57bbbFlkOAAAAQNvTamc0XXbZZamrq8v555/fsuyggw7K+eefn+OPPz51dXXZfffds88++yRJxo0bl9GjR2fu3Lnp27dvjjjiiCTJmDFjctppp2X8+PHZeOON84Mf/KC1hgwAAADASmi1omn06NEZPXr0Ej/3+9//frFlffr0yQ033LDY8k022SRXXXVV6eMDAAAAoFytdukcAAAAAB8uiiYAAAAASqFoAgAAAKAUiiYAAAAASqFoAgAAAKAUiiYAAAAASqFoAgAAAKAUiiYAAAAASqFoAgAAAKAUiiYAAAAASqFoAgAAAKAUiiYAAAAASqFoAgAAAKAUiiYAAAAASlFd6QHA8mqqX5jNRk2s+BgAAACAJVM00W506NQ5tSfdUtExTLpovyR1FR0DAAAAtFUunQMAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAEqhaAIAAACgFIomAAAAAErR6kXTnDlzMnTo0LzyyitJktNPPz0DBgzIfvvtl/322y9/+tOfkiRTpkxJbW1tBgwYkIsvvrhl+6effjrDhg3LwIEDM2rUqDQ0NLT2kAEAAAD4AFq1aHrsscdy8MEH54UXXmhZ9uSTT+a3v/1tbrnlltxyyy3Ze++9s2DBgpxxxhm55JJLctttt+XJJ5/MPffckyQ55ZRTcuaZZ+b2229PURSZMGFCaw4ZAAAAgA+oVYumCRMmZMyYMenRo0eSZN68eXnttddy5plnpra2Nj/+8Y/T1NSUxx9/PJtuuml69eqV6urq1NbWZvLkyXn11VezYMGCbLvttkmS/fffP5MnT27NIQMAAADwAVW35s7Hjh27yMczZszITjvtlLPPPjtdu3bNcccdlxtuuCFdu3ZNTU1Ny3o9evTI1KlTM23atEWW19TUZOrUqa05ZAAAAAA+oFYtmv5dr1698rOf/azl48MPPzw333xz9tlnn8XWraqqSlEUS1y+IjbYoNuKD3Q1VVPTvdJDWC2sDjmuDnMogxxk0EwOMkhk0EwOMmgmBxk0k4MMmslBBstjlRZNzzzzTF544YUMHDgwSVIURaqrq9OzZ8+8+eabLetNmzYtPXr0WGz59OnTWy7DW14zZsxJU9PihdWHTU1N90yfPrvSw1gpbeUbenXIsb3PoQxykEEzOcggkUEzOcigmRxk0EwOMmgmBxk069Chapkn9bT6U+feqyiKnHvuuZk1a1bq6+tz/fXXZ++9984222yT559/Pi+++GIaGxtz6623pn///tlkk03SpUuXPPLII0mSm2++Of3791+VQwYAAABgOa3SM5r69OmTY489NgcffHAaGhoyYMCADB06NEly/vnn5/jjj09dXV123333lsvpxo0bl9GjR2fu3Lnp27dvjjjiiFU5ZAAAAACW0yopmu66666W/z/00ENz6KGHLrZOv3798vvf/36x5X369MkNN9zQquMD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c8ghh2Ty5MnZaqutcskll7TWcAEAAABYSa1WNE2YMCFjxoxJjx49kiSPP/54Nt100/Tq1SvV1dWpra3N5MmT8+qrr2bBggXZdtttkyT7779/Jk+enPr6+jz00EMZOHDgIssBAAAAaJuqW2vHY8eOXeTjadOmpaampuXjHj16ZOrUqYstr6mpydSpUzNz5sx069Yt1dXViywHAAAAoG1qtaLp3xVFsdiyqqqqFV6+ojbYoNsKb7O6qqnpXukhrBZWhxxXhzmUQQ4yaCYHGSQyaCYHGTSTgwyayUEGzeQgg+Wxyoqmnj175s0332z5eNq0aenRo8diy6dPn54ePXpk/fXXz5w5c9LY2JiOHTu2LF9RM2bMSVPT4qXVh01NTfdMnz670sNYKW3lG3p1yLG9z6EMcpBBMznIIJFBMznIoJkcZNBMDjJoJgcZNOvQoWqZJ/W06lPn3mubbbbJ888/nxdffDGNjY259dZb079//2yyySbp0qVLHnnkkSTJzTffnP79+6dTp07Zfvvtc9ttty2yHAAAAIC2aZWd0dSlS5ecf/75Of7441NXV5fdd989++yzT5Jk3LhxGT16dObOnZu+ffvmiCOOSJKMGTMmp512WsaPH5+NN944P/jBD1bVcAEAAABYQa1eNN11110t/9+vX7/8/ve/X2ydPn365IYbblhs+SabbJKrrrqqVccHAAAAQDlW2aVzAAAAAKzeFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAA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iqI48cQTi6uvvrqVZrt0lc7hvaZNm1bsueeexfPPP1/uJN9HW8igf//+xf/7f/+vKIqiOP7444sJEya0xlSXqdI5PPvss8Vuu+3W8nNhzJgxxeWXX95Ks12yVZVBURTF//7v/xZDhw4tPvGJT7Tsry0cNxZF5XN44403iuOOO67Yeuuti4kTJ7bCDN9fpTNoC8eOlc6gLRw3FkX5Obz00kvFrrvuWrz++uvFwoULi4MPPri4++67l/n9P2TIkOLRRx8tiqIoTj/99FV+vNAWMmgLPxdWJWc0tQNrrbVW/uu//isPPfRQy7L7778/O++88xLX/+xnP5utt946t95662Kfe+6551JVVZVjjjkm++67b377298mebd53WmnnbLuuuuma9euGThwYCZPnpzHH388m266aXr16pXq6urU1tZm8uTJrTPRZahkBklyww035Oijj84222zTCrNbPpXMoHPnzvnOd76Tbt26paqqKr17985rr73WOhN9H5XMoVevXvnDH/6Qrl275p133smcOXOy9tprt85El6HS3w8LFy7MWWedlREjRrTC7JZfJXOYN29eXnvttZx55pmpra3Nj3/84zQ1NbXORJehkhncf//92XbbbdOnT58kyejRo7P33nu3wizfX6W/J5pdeOGFOeigg/Kxj32svMktp0pn0NjYmDlz5qSxsTF1dXXp0qVLK8zy/VUyh2eeeSbbbrttevTokSTZY4898t///d+tMMtlWxUZJMmECRMyZsyYlvkmaTPHjUllc5g0aVL23HPPDBo0qMQZrbhKZtBWjh0rmUFbOW5Mys3hT3/6UwYPHpyNNtoonTp1ysUXX5xtttlmqd//r776ahYsWJBtt902SbL//vu3+78nVzSDpO38XFhVFE3txKBBg3L77bcnefeX+JZbbplOnTotdf0tttgizz333GLL33nnnfTr1y8/+9nPcsUVV+S6667L/fffn2nTpqWmpqZlvR49emTq1KlLXV4JlcogSU499dTstddeJc9oxVUqg0022aTlh/Bbb72Vq6++OnvuuWfJs1t+lXwvdOrUKRMmTMhee+2Vmpqalj+yV7VKZnDRRRdl2LBh+chHPlLyrFZcpXKYMWNGdtppp5x77rmZMGFCHn744dxwww3lT3A5VCqDF198MV27ds03vvGN1NbW5ic/+UnFDqCTyn5PJMkLL7yQv/3tbzniiCNKnNWKqWQG3/nOd3L44Ydnt912y8yZM7PPPvuUPLvlV6kc+vTpk8ceeyyvv/56GhsbM3ny5Lz55pvlT3A5tHYGSTJ27Nhsv/32i6zflo4bk8rlcPTRR+eAAw4ocSYfXKUyaEvHjpXKIGk7x41JeTm8+OKLaWxszFe+8pXsu+++ueaaa7LOOuss99+TNTU17f7vyRXNIGlbPxdWBUVTO7HHHnvkL3/5S5qamvLHP/7xfZvQqqqqrLHGGost32677XLhhRema9euWX/99TN8+PDcc889S7xeuKqqaqnLK6FSGbQllc5g6tSp+dKXvpRhw4Zlxx13XPkJfUCVzuGLX/xi/vrXv2bDDTfMT3/605Wf0AdQqQzuv//+vP766xk2bFhpc1kZlcqhV69e+dnPfpYNNtgga665Zg4//PDcc889pc1rRVQqg8bGxtx333057bTTcvPNN2f+/Pn5xS9+Udq8VlSlfy5cf/31OeSQQ9K5c+eVn8wHVKkMpk+fnnHjxuXWW2/Nfffdl2222SbnnXdeafNaUZXK4eMf/3hOOumkfO1rX8uhhx76vn/AtKbWzmBp2tqxVKVyaEsqnUFbOHasdAZt4bgxKS+HxsbGPPDAA/n+97+fCRMm5IknnshNN930ofp7ckUz+DBSNLUT3bp1S58+ffLII4/kwQcfXOopfs2eeeaZbL755rnzzjtbblb3ox/9KA8//HAeeOCBlvWKokh1dXV69uy5yL+6TZs2LT169Fjq8kqoVAZtSSUzePbZZ3PwwQfnC1/4Qr7xjW+0zgSXU6VyeP311/PII48kSaqrqzNkyJA888wzrTPJ91GpDG699db861//yn777ZfRo0fnySefzAknnNBa03xflcrhmWeeafkXsfeuXwmVymDDDTfMNttsk169eqVjx44ZNGjQMm+a2doq/TvizjvvzODBg8uf2AqoVAYPP/xwevfunY9+9KPp0KFDvvjFL+Zvf/tbq83z/VQqh7q6umy99da5+eabc9111+U//uM/0qtXr1ab57K0dgZL09aOpSqVQ1tSyQzayrFjpTJoS8eNSXk5bLjhhunXr1/WX3/9rLHGGtlzzz3z+OOPL/ffk9OnT2/3f0+uaAYfRoqmdmTQoEG56KKLstVWWy3zh9pdd92Vp59+OoMGDcqee+6ZW265JbfccktGjBiR2bNn58ILL0xdXV3mzJmTm266KXvvvXd23nnnPPDAA3nrrbcyf/783HHHHenfv3+22WabPP/88y2nB956663p37//Kpz1oiqRQVtTiQzmzJmTr3zlKxkxYkS+/OUvr8LZLl0lcpg9e3ZOOeWUvPPOOymKIrfffns+/elPr8JZL6oSGZx33nn54x//mFtuuSXnnHNOttpqq/zwhz9cdZNegkrkUBRFzj333MyaNSv19fW5/vrrK3Z/oqQyGey666556qmn8vrrrydJ/vznP+cTn/jEqpryElXqd8Rbb72VBQsWVKxUeK9KZNC7d+88/vjjLQfXd955Zz75yU+uqikvUSVymDdvXr70pS9lzpw5WbhwYa666qqKlo+tmcHStLXjxqQyObQ1lcigrR07ViKDtnbcmJSTwx577JH77rsv77zzThobG3PvvffmE5/4xFK//zfZZJN06dKlpXS7+eab2/3fkyuawYdR+6jiSfLuqX6jRo1a4g14jz322JbTs9dbb7386le/Srdu3Za4j8ceeyyf//zn09TUlEMOOSTbbbddkuTEE0/MEUcckfr6+gwfPjxbb711kuT888/P8ccfn7q6uuy+++4Vve9CpTJoSyqRwRVXXJE333wzl19+eS6//PIkyec+97mK3gy6Uu+FY489NgcddFA6duyY7bffPkcddVQrznLZfD+8q5LvhYMPPjgNDQ0ZMGBAhg4d2oqzXLZKZXD22Wfnq1/9aurq6vJf//VfGTlyZCvO8v1VKodXXnklG220USvObPlVKoMRI0bkiCOOSMeOHbPpppvm7LPPbsVZvr9K5fDNb34zBx54YBoaGloe614prZ3BknTp0qVNHTcmlcmhralEBjfccEObOnasRAa9e/duU8eNSTk5bLPNNjn66KNzyCGHpL6+PrvsskuGDRuWDh06LPX7f9y4cRk9enTmzp2bvn37VvR+hpXK4MOmqljShYQAAAAAsIJcOgcAAABAKRRNAAAAAJRC0QQAAABAKRRNAAAAAJRC0QQAAABAKaorPQAAgNVNY2NjfvOb32TSpElpbGxMfX199thjj4wYMSKdO3de5rZ//vOfc/nll2f27Nmpr6/PFltskZEjR2bjjTdeRaMHAPjgqoqiKCo9CACA1cmZZ56ZWbNmZezYsenevXvmzZuXk08+OWuttVa+//3vL3W7SZMmZfz48Rk/fnw23XTTFEWRX/ziF7nhhhvyhz/84X1LKgCASlM0AQCU6OWXX05tbW3uu+++dOvWrWX59OnT8+ijj6Zfv3757ne/m3/84x+pqqrKbrvtlm9/+9uprq7O5z73uXzve9/LLrvs0rJdURS59dZbs8cee2T+/PkZOXJkZs6cmSTZfffdc8IJJ6zqKQIALJV7NAEAlOjvf/97/vM//3ORkilJampqMmDAgJxzzjlZd911M2nSpEycODHPPPNMLr/88sycOTOvvvpqPvWpTy2yXVVVVWpra9OtW7dMmDAhH/nIR3LTTTfl6quvzosvvpjZs2evyukBACyTogkAoEQdOnRIU1PTUj//l7/8JYcddliqqqrSuXPnHHTQQfnLX/6SDh3ePSxb1ra77bZb7rjjjhxzzDG5/vrrc9JJJ6V79+6lzwEA4INSNAEAlGjrrbfOc889lzlz5iyyfOrUqTn22GMXK5KamprS0NCQddZZJx/72Mfy2GOPLbbPESNG5B//+Ee23nrr3HnnnTnwwAPz6quv5oADDsj//M//tOp8AABWhKIJAKBEPXv2TG1tbc4444yWsmnOnDn5zne+k3XXXTe77rprrr766hRFkYULF2bChAnZeeedkyTf/OY3M3bs2Lz44otJ3n163SWXXJJ//OMf2WyzzTJu3Lhccskl2WuvvTJq1Kj853/+Z1544YVKTRUAYDFuBg4AULKGhoZccsklueOOO9KxY8csXLgwe+21V44//vjMnTs355xzTp555pnU19dnt912y6mnntryRLnf//73ufLKK9PQ0JC6urp84hOfyCmnnJKNNtoo06dPz2mnnZapU6emc+fO2XLLLfPd737X0+gAgDZD0QQAAABAKVw6BwAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlELRBAAAAEApFE0AAAAAlOL/Azv77Y4nBtoCAAAAAElFTkSuQmCC
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Interesting, it looks like the Baltimore CoC has the highest rate of homeless people, but then again, Baltimore City is one of the most populated areas! Most of the homeless in 2019 were sheltered, which is good to hear. Let's take a look at the how the income per capita for these CoCs aligns with the homelessness rate. We'll use <a href="https://seaborn.pydata.org/generated/seaborn.scatterplot.html">seaborn</a> to do this.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[202]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">finances</span><span class="p">[</span><span class="s2">&quot;Income Per Capita&quot;</span><span class="p">],</span> <span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;Overall Homeless, 2019&quot;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Overall Homeless&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Income per Capita&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,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L62Gpr/+67/OBRdckL/8y7/Mvffem5qamhx77LHtMRsAAAAAZaTVM5rOPvvsjBkzJr179869996bF198MSeccEJ7zAYAAABAGWn1iqaampr07t07SXLYYYflr/7qrzJ58uS2ngsAAACAMrPbK5q++MUv5sUXX8zWrVvz53/+5y3rzc3N+chHPtIuwwEAAABQPnYbmm655Za88847mTp1aqZPn/7/P6GyMlVVVe0yHAAAAADl433PaDrqqKNy880377S+YcOG9OvXr61mAgAAAKAM7TY0nX/++XnggQdy6qmnpqKiIqVSqeXXKioqsnTp0nYZEAAAAIDysNvQ9MADDyRJli1b1m7DAAAAAFC+3vfWuSRpamrK7Nmz8/TTT6d79+4588wzU1NT0x6zAQAAAFBGWg1N3/nOd7J8+fJMmDAhpVIp999/f1auXJkpU6a0x3wAAAAAlIlWQ9OiRYvyi1/8Ij169EiSjB8/PuPHjxeaAAAAANhBt9YecOihh6apqanl44qKivTt27dNhwIAAACg/LR6RdOxxx6bc889NzU1NenevXvmzZuXQw89NHfeeWeS5Etf+lKbDwkAAABA59dqaEqS4447LkuWLEmSHHXUUUmS3/3ud203FQAAAABlp9XQNH369PaYAwAAAIAy12po+u1vf5s77rgj7733XkqlUpqbm/P666/nqaeeaofxAAAAACgXrR4GftVVV+Wkk07Kpk2bMm7cuPTp0ycjRoxoj9kAAAAAKCOtXtFUUVGRr3zlK1m/fn2OPfbYjB8/Puecc057zAYAAABAGWn1iqY/+ZM/SZJ86EMfyssvv5xevXqlqampzQcDAAAAoLy0ekXTxz/+8Xz961/PpZdemgsuuCArVqxI9+7d22M2AAAAAMpIq1c0TZs2LZMnT86HP/zhTJs2Lc3NzZkxY0Z7zAYAAABAGXnfK5rWr1+f5ubmDB48OEnSs2fPfPWrX03//v3bYzYAAAAAyshur2h6+eWXM3r06Pyf//N/WtaeeOKJjB8/Pq+88kq7DAcAAABA+dhtaPr7v//7TJs2LcOHD29Z+9a3vpVvfOMbuemmm9plOAAAAADKx25D0xtvvJFx48bttF5TU5Pf//73bToUAAAAAOVnt6GpsnL3xzf16NGjTYYBAAAAoHztNjQNGDAgS5cu3Wn93//933PwwQe36VAAAAAA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3Xdfy2vPhAkT8olPfCLXXnut/QN76KGHHsrYsWMzduzY3HDDDUn8HAR744477sjIkSMzbty43HbbbUnsoV0qHaAWLVpU+tSnPlW6/PLLS6VSqTR27NjSb3/721KpVCpdeeWVpXvuuadUKpVKX/nKV0pz584tlUql0g9/+MPSjTfeWCqVSqVvf/vbpdtvv71UKpVKDzzwQOnSSy8tlUql0o9+9KPS1VdfXSqVSqV/+7d/K02cOLG9viVoF83NzaXTTjut1NDQ0LK2evXq0hlnnFFav359afPmzaVx48aVXn755dKWLVtKw4YNK7322mulhoaG0v/4H/+j9NRTT5VKpb3fc9BVvPbaa6XTTz+99Oabb5a2bdtWOuecc0pPPfVUYXtld69P0NX87ne/Kw0fPry0atUq+wf2wHvvvVf65Cc/Waqrqys1NDSUJk6cWFq4cKGfg2APLVy4sHTWWWeVNm7cWGpsbCxdcMEFpccee8we2oUD8oqmd955JzNnzsxXv/rVJMkbb7yRrVu3ZvDgwUmSmpqazJ8/Pw0NDXnmmWcycuTIHdaT5Kmnnsq4ceOSJGeddVb+9V//NQ0NDXnqqacyfvz4JMknP/nJrF+/PqtWrWrn7xDaziuvvJKKiop8+ctfzvjx4/PTn/40ixYtyqmnnpp+/fqld+/eGTlyZObPn58XXnghxxxzTI4++uhUVlZm3LhxmT9//j7tOegqnnjiiYwZMyaHH354evTokZkzZ+bggw8ubK/s7vUJupq/+7u/y5QpU/L73//e/oE90NTUlObm5mzZsiWNjY1pbGxMZWWln4NgD/37v/97Tj/99PTp0yfdu3fPpz/96cyaNcse2oUDMjR961vfypQpU9K3b98kydq1a1NVVdXy61VVVVmzZk3Wr1+fPn36pLKycof1P/6cysrK9OnTJ2+//fYun2v16tXt9a1Bm9uwYUOGDBmSW265JXfddVdmz56dVatW7fD7vrq6OmvWrNlpP+xufU/2HHQVK1euTFNTU/7mb/4m48ePzz//8z8Xuld29/oEXcmiRYuydevWjB492v6BPdSnT59ceumlGT16dIYOHZojjzwyPXr08HMQ7KFBgwbl6aefzjvvvJP6+vo8+eSTqaystId24YALTffdd1+OOOKIDBkypGWtVCrt9LiKiordru9Ot267/s+5u3UoRyeddFJuvPHG9O7dO/3798/EiRNz88037/S499tDRe05KEdNTU1ZvHhxbrrppsyZMycvvvhiXn/99Z0eV+Re8TpEVzN79ux86UtfSrL3f4+zfzhQLVu2LD//+c/zq1/9Kk8//XS6deuWhQsX7vQ4PwfBrg0ZMiQ1NTU5//zz87d/+7f5xCc+kaampp0eZw8dgKFp3rx5WbhwYSZMmJCbb745Tz75ZO6777689dZbLY9Zt25dqqur079//2zatKnlN8/29eQP/7ds++c0NjZm06ZN6devX6qrq3c4OPI/fw50Bc8++2wWL17c8nGpVMqRRx65wx5au3Ztqqurc9hhh+3R+p7sOegqPvjBD2bIkCHp379/DjrooHzmM5/JwoULC9sru3t9gq5i27ZteeaZZ3LmmWcmSaGvNfYPXdnTTz+dIUOGZMCAAenZs2dqamrym9/8xs9BsIc2bdqU4cOH55FHHsmsWbNy8MEH7/RzkD30BwdcaLrzzjszd+7cPPTQQ/na176WM888M9OnT0+vXr3y3HPPJUkefPDBDB06ND169MjJJ5+cefPm7bCeJMOGDcuDDz6Y5A/x6uSTT06PHj0ybNiwPPTQQ0n+8AN5r1698l/+y39p/28U2sjGjRtz4403pr6+Pps2bcoDDzyQm266KYsXL87bb7+dLVu25PHHH8/QoUNz4okn5tVXX225VWju3Lktl2rv7Z6DruKMM87I008/nQ0bNqSpqSm//vWvM2rUqML2yu5en6Cr+I//+I/81//6X9O7d+8kKfS1xv6hKzv++OOzaNGivPfeeymVSnnyySdzyimn+DkI9tDrr7+eiy++OI2Njdm4cWPuu+++TJw40R7ahYrSrq7pOkDU1tbm3/7t33L99ddn2bJlueqqq7J58+Z89KMfzfTp09OzZ8+88cYbueKKK1JXV5cjjjgi3//+9/OBD3wg77zzTq644or8/ve/zyGHHJIZM2bkqKOOSn19fb71rW/lpZdeSs+ePXPddddl0KBBHf2tQqF+8IMf5LHHHktzc3POPffcfPGLX8wjjzyS22+/PQ0NDZk4cWK+/OUvJ0kWL16c6dOnp76+PsOGDcuVV16ZioqKvd5z0JXcf//9ueuuu9LQ0JDTTjstV111VX7zm98Usld29/oEXcW8efPyxBNPZObMmS1rRb3W2D90dXfccUdqa2vTo0ePfPzjH88111yTV1991c9BsIduueWW/OIXv0hTU1MmT56cc845R0vYhQM6NAEAAABQnAPu1jkAAAAA2obQBAAAAEAhhCYAAAAACiE0AQAAAFAIoQkAAACAQghNAECX87Of/Szjx4/PmDFjMnbs2Fx22WVZtWpVu3ztf/zHf8y1116bJDnzzDPz4osv7vSYK664Ij/+8Y93Wj/uuOPy9ttvt/mMu5sLAGB/VXb0AAAARbrhhhuybNmy3H777TniiCPS3Nychx9+OP/9v//33HfffTn88MM7ekQAgC5LaAIAuozVq1dn9uzZeeqpp/KBD3wgSdKtW7d89rOfzUsvvZTbb789n/nMZ3LDDTfkkUceSZJs2LAhn/nMZ/Iv//Iv2bp1a6699tq8+eabaWhoyNixY/PVr341r7/+es4777wMHDgwb7zxRmbNmpXa2tr8y7/8S+rr67Nly5ZcfvnlGT58eGHfy7333ptZs2alW7du+eAHP5irr746H/7wh3PFFVekV69eefHFF/PWW29l9OjR6d+/f371q19l3bp1ue666zJkyJBs27YtM2bMyDPPPJOmpqZ89KMfzVVXXZU+ffrs8HWefPLJ3HbbbWloaMhBBx2Uyy+/PCeddFKWL1+eadOmZdu2bSmVSpk4cWLOO++83a4DACRunQMAupDnn38+xx57bEtk+s/+4i/+Is8991xOO+20bN68ueXWsblz52bYsGH5wAc+kMsuuyxnn312amtrc//992fRokWZN29ekj9ErIsuuiiPPfZYGhoasmjRovz0pz/NI488kilTpuTmm2/eq1nvuuuuTJgwYYd/tlu8eHF+9KMf5Sc/+UkefvjhnHXWWbn44otTKpWSJEuXLs29996bn//857nrrrvSu3fvzJ49O5MmTco//dM/JUnuuOOOdO/ePbW1tXn44YdTXV2dGTNm7DDDihUrMnPmzNxxxx158MEH853vfCeXXHJJ3nvvvfz4xz/OmWeemdra2txxxx159tln09zcvNt1AIDEFU0AQBfT2Ni4y/Vt27aloqIiFRUVmThxYh544IF8/OMfT21tbS677LK89957eeaZZ/Luu+/mH/7hH5Ik7733XpYtW5YTTjghlZWVGTx4cJLkyCOPbLkqauXKlXn++eezefPmvZpz8uTJ+Zu/+Zsd1o477rgkya9//euMGTMm/fv3T5LU1NTku9/9bl5//fUkyRlnnJEePXqkqqoqvXv3zqc//ekkyYc+9KG88847SZKnnnoqGzduzKJFi5IkDQ0NGTBgwA5fb+HChVm7dm0mT57cslZRUZHXXnstw4cPz+WXX54XXnghQ4YMyVVXXZVu3brtdh0AIBGaAIAuZPDgwVm5cmXWrVuXqqqqHX7tN7/5TU466aQkydlnn53Pfvaz+fznP5+NGzfmU5/6VDZt2pRSqZTZs2fn4IMPTpK8/fbb6dWrV9avX5+ePXumsvIPf3VasmRJLrrookyePDmnnXZaPvnJT+bb3/52Yd/H9iuX/nhte0Tr2bPnDr+2fa7/rLm5OVOnTs2wYcOSJJs3b059ff1OjxkyZEh+8IMftKy9+eabqa6uzvHHH5/HHnssixYtyuLFi3PLLbdk9uzZOeOMM3a5/qEPfWh/v20AoAvwv58AgC7jsMMOy/nnn59vfOMbWbNmTcv6z3/+8zz++OP58pe/3PK4E088Md/61rcyceLEJEmfPn0yePDg3HnnnUn+cHbTOeeck1/+8pc7fZ1nnnkmH/vYx/KlL30pp5xySn75y1+mqampsO/j9NNPz7x581rege7nP/95+vXrl2OOOWavnuOee+7Jtm3b0tzcnKuvvjrf//73d3jMqaeemoULF2b58uVJkgULFmT8+PGpr6/PN7/5zcybNy9jx47NNddckz59+uTNN9/c7ToAQOKKJgCgi/nmN7+Z++67LxdeeGG2bduWbdu25eMf/3hmz56dI488suVxn//853PppZfmtttua1mbMWNGvvOd72TcuHHZtm1bzjrrrIwfP77llrXtzjrrrDz++OMZM2ZMevTokSFDhuTdd9/Npk2bCvkeTjvttEyePDlf/OIX09zcnP79++f222/fq1vULrrootxwww353Oc+l6ampnzkIx/JFVdcscNj/uzP/izXXnttvvGNb6RUKqWysjK33XZbevfunYsuuijTpk3Lvffem+7du+ev/uqvcsopp+SDH/zgLtcBAJKkorSra7MBAAAAYC+5dQ4AAACAQghNAAAAABRCaAIAAACgEEITAAAAAIUQmgAAAAAohNAEAAAAQCGEJgAAAAAKITQBAAAAUIj/B+lmyjhMBQnuAAAAAElFTkSuQmCC
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>There appears to be somewhat of a correlation between the overall homeless population and the income per capita. Maybe we'll have better luck with the cost of living?</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[201]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">finances</span><span class="p">[</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">],</span><span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;Overall Homeless, 2019&quot;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Overall Homeless&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+
+<div class="output_png output_subarea ">
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABJoAAAJPCAYAAAA0Sr4gAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjMuMywgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy/Il7ecAAAACXBIWXMAAAsTAAALEwEAmpwYAAA2k0lEQVR4nO3dfXTW9Z3n/1digEojtdIEXWo9O7SVES167KopLUzryI2A2kCtNyvQW6uudWwPq6IMo61Vu1inrcXVrjO61FZRUxUG0VVHpi20R91ZHKl0Zyna9Q4w3mC4CZBcvz/8kR1u0kj9Jrmu8Hicwzlen1zJ9eb4OUl8+v1+rqpSqVQKAAAAALxL1b09AAAAAAB9g9AEAAAAQCGEJgAAAAAKITQBAAAAUAihCQAAAIBCCE0AAAAAFEJoAgAAAKAQNb09QHd7/fWNaW8v9fYY/P8GD65Nc3NLb48B9iJlwT6kHNiHlAt7kXJgH1IOyn0fVldX5f3vf2+nH+/zoam9vSQ0lRn/PigX9iLlwD6kHNiHlAt7kXJgH1IOKnkfunUOAAAAgEIITQAAAAAUQmgCAAAAoBBCEwAAAACFEJoAAAAAKITQBAAAAEAhhCYAAAAACiE0AQAAAFAIoQkAAACAQghNAAAAABRCaAIAAACgEEITAAAAAIUQmgAAAAAohNAEAAAAQCGEJgAAAAAKITQBAAAAUAihCQAAAIBCCE0AAAAAFKKmtwcAeDeWr3wlTUtXp3lDawYPGpDGMcPSMOLg3h4LAABgnyQ0ARVr+cpXcvuDq7J1e3uSpHlDa25/cFWSiE0AAAC9wK1zQMVqWrq6IzLtsHV7e5qWru6liQAAAPZtQhNQsZo3tO7VOgAAAN1LaAIq1uBBA/ZqHQAAgO4lNAEVq3HMsPSv2fnbWP+a6jSOGdZLEwEAAOzbHAYOVKwdB3571zkAAIDyIDQBFa1hxMHCEgAAQJlw6xwAAAAAhRCaAAAAACiE0AQAAABAIYQmAAAAAAohNAEAAABQCKEJAAAAgEIITQAAAAAUQmgCAAAAoBBCEwAAAACFEJoAAAAAKITQBAAAAEAhhCYAAAAACiE0AQAAAFAIoQkAAACAQghNAAAAABRCaAIAAACgEEITAAAAAIUQmgAAAAAohNAEAAAAQCGEJgAAAAAKITQBAAAAUAihCQAAAIBCCE0AAAAAFEJoAgAAAKAQQhMAAAAAhRCaAAAAACiE0AQAAABAIYQmAAAAAAohNAEAAABQCKEJAAAAgEIITQAAAAAUQmgCAAAAoBBCEwAAAACFEJoAAAAAKITQBAAAAEAhhCYAAAAACiE0AQAAAFAIoQkAAACAQghNAAAAABRCaAIAAACgEEITAAAAAIUQmgAAAAAohNAEAAAAQCGEJgAAAAAKITQBAAAAUAihCQAAAIBCCE0AAAAAFEJoAgAAAKAQQhMAAAAAhRCaAAAAACiE0AQAAABAIYQmAAAAAAohNAEAAABQCKEJAAAAgEIITQAAAAAUQmgCAAAAoBDdGppuvPHGTJw4MRMnTsx3v/vdJMmyZcsyefLkjB07NjfccEPHc5999tlMmTIl48aNy+WXX57t27cnSV566aWcffbZGT9+fM4777xs3LixO0cGAAAA4E/UbaFp2bJl+eUvf5mf//znue+++7Jy5cosWrQos2bNyrx587J48eI888wzWbp0aZJk5syZmT17dh566KGUSqUsWLAgSXLllVfmrLPOypIlS3LkkUdm3rx53TUyAAAAAO9Ct4Wmurq6XHrppenfv3/69euXYcOG5bnnnsthhx2WQw89NDU1NZk8eXKWLFmSF198MVu2bMnRRx+dJGlsbMySJUuybdu2PPHEExk3btxO6wAAAACUn5ru+sIf+chHOv75ueeey+LFi3POOeekrq6uY72+vj5r167NunXrdlqvq6vL2rVr8/rrr6e2tjY1NTU7re+NwYNr3+XfhKLV1R3Q2yNAEnuR8mAfUg7sQ8qFvUg5sA8pB5W8D7stNO3wr//6rzn33HNzySWXpKamJmvWrNnp41VVVSmVSrt93h9b3xvNzS1pb9/969A76uoOyPr1b/X2GGAvUhbsQ8qBfUi5sBcpB/Yh5aDc92F1ddUfvainWw8Df+qppzJjxox885vfzGc/+9kMGTIkr776asfH161bl/r6+t3W169fn/r6+hx00EFpaWlJW1vbTusAAAAAlJ9uC00vv/xyLrjggsydOzcTJ05MkowcOTJr1qzJ888/n7a2tixatCijR4/O0KFDM2DAgDz11FNJkvvuuy+jR49Ov3798vGPfzyLFy/eaR0AAACA8tNtt87deuutaW1tzbXXXtuxdsYZZ+Taa6/NhRdemNbW1owZMybjx49PksydOzdXXHFFNm7c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2W+//bpvMgAAAAAqSpdXNH3605/OF7/4xZx22mkplUp54IEH8hd/8Rd54IEHMnjw4J6YEQAAAIAK0GVouuSSS7JgwYI8+uijqampyamnnprGxsYsW7Ys11xzTU/MCAAAAEAF6DI0VVdXp7GxMRMmTOi4he7NN9/MqFGjun04AAAAACpHl6Hp9ttvz/XXX59t27YlSUqlUqqqqvLss892+3AAAAAAVI4uQ9P8+fPzs5/9LCNGjOiJeQAAAACoUF2+61xdXZ3IBAAAAECXugxNo0aNyk9/+tOsXbs2b7zxRscfAAAAAPi3urx17pZbbsnWrVtz1VVXdaw5owkAAACAXXUZmp5++umemAMAAACACtdpaLr//vtz6qmn5u///u/3+PEvfOEL3TYUAAAAAJWn09D0/PPPJ0n+9//+3z02DAAAAACVq9PQ9PWvfz1JcvLJJ+dTn/pUjw0EAAAAQGXq8l3nbrzxxnzmM5/JjTfemLVr1/bETAAAAABUoC5D01133ZUf//jH2bx5c04//fSce+65eeSRR3piNgAAAAAqSJehKUmGDRuWmTNn5oc//GFef/31fOMb3+juuQAAAACoMJ2e0bRDc3NzHnjggfz85z9PW1tbpk6dmptvvrknZgMAAACggnQZmsaOHZuxY8dmzpw5OfbYY3tiJgAAAAAqUJehaenSpamtre2JWQAAAACoYJ2Gposuuijf//73c+aZZ+7x4wsXLuy2oQAAAACoPJ2Gpq985StJktmzZ/fYMAAAAABUrk5D05FHHpkkOe6443b72PXXX7/HdQAAAAD2XdV/yifdcccdRc8BAAAAQIX7k0JTqVQqeg4AAAAAKtyfFJqqqqqKngMAAACACtfpGU0PP/zwHtdLpVLa29u7bSAAAAAAKlOnoWn+/PmdftJRRx3VLcMAAAAAULn+pNAEAAAAALv6k85oAgAAAIBdCU0AAAAAFKLT0LRixYqenAMAAACACtdpaJozZ06SZPr06T02DAAAAACVq9PDwNva2vLFL34xv/3tb/O1r31tt4//1//6X7t1MAAAAAAqS6eh6cc//nF+/etfZ82aNRk3blxPzgQAAABABeo0NB188ME57bTTcsghh+T444/Piy++mO3bt+ewww7ryfkAAAAAqBCdhqYdhgwZkokTJ2bdunVpb2/P+9///tx8880ZNmxYT8wHAAAA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xEycODHXXXddkuTZZ5/NlClTMm7cuFx++eXZvn17L09JX3fLLbdk3LhxmTx5cm666aYk9iE9p6WlJZMmTcoLL7yQJFm2bFkmT56csWPH5oYbbuh4nj1Jd9t1LybJJZdckqampo7HL730Us4+++yMHz8+5513XjZu3Ngbo9KH7boP77rrrkyaNCmTJ0/OZZddlq1btybxPZHutes+/OlPf5qJEyfm5JNPznXXXZdSqZTEPqR77enncpLccccdOeecczoeV+LPZqGJbrN58+ZcffXVmT9/fu6///48+eSTWbZsWWbOnJnZs2fnoYceSqlUyoIFC3p7VPqwZcuWZeHChbn33ntz3333ZcWKFXn44YftQ3rEihUrcuaZZ+a5555LkmzZsiWzZs3KvHnzsnjx4jzzzDNZunRpktiTdKtd9+LatWvzta99LUuWLNnpeVdeeWXOOuusLFmyJEceeWTmzZvXC9PSV+26D9esWZNbb701d955Zx544IG0t7fnpz/9aRLfE+k+u+7D//t//29uu+223H333Vm4cGH++Z//Ob/61a+S2Id0n1334Q7/5//8n9x88807rVXiz2ahiW7T1taW9vb2bN68Odu3b8/27dtTU1OTLVu25Oijj06SNDY27vZLLhTpt7/9bT75yU+mtrY2++23Xz71qU9l/vz59iE9YsGCBZkzZ07q6+uTJE8//XQOO+ywHHrooampqcnkyZOzZMmSvPjii/Yk3WrXvbhw4cKceOKJmTBhQsdztm3blieeeCLjxo1LYh9SvF33Yf/+/fM3f/M3qa2tTVVVVT760Y/mpZde8j2RbrXrPjz00EPzD//wDxk4cGA2bNiQlpaWDBo0yD6kW+26D5Nk69at+eu//utcdNFFHWuV+rO5prcHoO+qra3NRRddlAkTJuQ973lPjjvuuPTr1y91dXUdz6mrq8vatWt7cUr6uhEjRuQ73/lOzj333Oy///557LHHUlNTYx/SI66++uqdHq9bt26nvVdfX5+1a9futm5PUrRd9+KXv/zlJMlTTz3Vsfb666+ntrY2NTVv/3poH1K0Xffh0KFDM3To0CTJa6+9ljvuuCPXXHON74l0q133YZL069cvCxYsyHXXXZePfexjGT58eFauXGkf0m32tA+vv/76TJkyJR/84Ac71ir1Z7Mrmug2q1atyr333pt//Md/zC9/+ctUV1d3XIb6b1VVVfXCdOwrGhoa0tjYmHPOOSdf/vKXc+yxx6atrW2359mH9IQdZz78W1VVVZ2uQ0+yD+kta9euzfTp0zNlypQcf/zx9iK94vTTT89vfvObfOADH8iNN95oH9KjfvWrX+Xll1/OlClTdlqv1H0oNNFtfvnLX6ahoSGDBw9O//7909jYmN/85jd59dVXO56zfv36nS4XhKK1tLTkpJNOysKFCzN//vzsv//+GTp0qH1IrxgyZMhOe2/dunWpr6/fbd2epDccdNBBaWlp6Yjx9iE9YfXq1TnzzDPz2c9+NhdccEGS3b9X2ot0p5dffrnj6s6amppMnDgxv/vd7+xDetSiRYvyr//6rzn11FNzxRVX5Jlnnslf/dVfVezPZqGJbjN8+PAsW7YsmzZtSqlUymOPPZbjjjsuAwYM6Phmft9992X06NG9PCl92QsvvJALLrgg27dvz1tvvZW77747U6dOtQ/pFSNHjsyaNWvy/PPPp62tLYsWLcro0aMzdOhQe5Je169fv3z84x/P4sWLk9iHdL+WlpZ86UtfykUXXZQvfvGLHeu+J9KT3nrrrcycOTMbNmxIqVTKQw89lGOPPdY+pEddc801efDBB3P//ffn29/+do488sj87d/+bcX+bHZGE93mk5/8ZH7729+msbEx/fr1y1FHHZWvfvWrOemkk3LFFVdk48aNOeKIIzJt2rTeHpU+bPjw4Rk7dmxOOeWUtLW1ZcaMGTn22GMzd+5c+5AeN2DAgFx77bW58MIL09ramjFjxmT8+PFJYk9SFubMmZNLL700N910Uw455JB873vf6+2R6MPuueeevPrqq/m7v/u7/N3f/V2S5DOf+Uwuuugi3xPpMR/96Efz1a9+NWeccUb222+/fPzjH88XvvCFJH42Ux4q8WdzVWlPN/0BAAAAwF5y6xwAAAAAhRCaAAAAACiE0AQAAABAIYQmAAAAAAohNAEAAABQCKEJAOhzfvazn+WUU07JySefnIkTJ2bmzJl56aWXeuS1f/jDH+aqq65K8vZbtf/Lv/zLbs+59NJLc+utt+62fvjhh+e1117r9hk7mwsA4N2q6e0BAACKdN1112XVqlW5+eabc8ghh6S9vT0PPPBAPv/5z+fuu+/OwQcf3NsjAgD0WUITANBnvPLKK7nzzjvz+OOP533ve1+SpLq6OqeddlqeeeaZ3HzzzTnxxBNz3XXXZeHChUmSDRs25MQTT8wjjzySLVu25KqrrsrLL7+cbdu2ZeLEifna176WF154IWeffXaGDRuWF198MfPnz09TU1MeeeSRtLa2ZvPmzbnkkkty0kknFfZ3ueuuuzJ//vxUV1fnAx/4QGbPnp1//+//fS699NIMGDAg//Iv/5JXX301EyZMyEEHHZR//Md/zPr16/Ptb387DQ0N2bp1a+bOnZsnnngibW1tOeKII3LFFVektrZ2p9d57LHHctNNN2Xbtm15z3vek0suuSTHHHNMVq9encsvvzxbt25NqVTK1KlTc/bZZ3e6DgCQuHUOAOhDVqxYkT/7sz/riEz/1ic+8Yk89dRTGTVqVDZu3Nhx69iiRYsyZsyYvO9978vMmTMzZcqUNDU15Z577smyZcuyePHiJG9HrPPPPz8PPfRQtm3blmXLluUnP/lJFi5cmIsvvjg/+MEP9mrW2267LaeeeupOf3ZYvnx5/tt/+2/57//9v+eBBx7IpEmTcsEFF6RUKiVJnn322dx111259957c9ttt2XgwIG58847M23atPz4xz9Oktxyyy3Zb7/90tTUlAceeCD19fWZO3fuTjM899xzueGGG3LLLbfkvvvuy7e+9a1ceOGF2bRpU2699dZ85jOfSVNTU2655ZY8+eSTaW9v73QdACBxRRMA0Mds3759j+tbt25NVVVVqqqqMnXq1Pz85z/PUUcdlaampsycOTObNm3KE088kTfffDPf//73kySbNm3KqlWr8rGPfSw1NTU5+uijkyRDhw7tuCrq+eefz4oVK7Jx48a9mnPGjBn50pe+tNPa4YcfniT5xS9+kZNPPjkHHXRQkqSxsTFXX311XnjhhSTJpz/96fTr1y91dXUZOHBgPvWpTyVJPvShD+WNN95Ikjz++ON56623smzZsiTJtm3bMnjw4J1e71e/+lXWrVuXGTNmdKxVVVXlD3/4Q0466aRccsklefrpp9PQ0JArrrgi1dXVna4DACRCEwDQhxx99NF5/vnns379+tTV1e30sd/85jc55phjkiRTpkzJaaedls997nN56623cvzxx6elpSWlUil33nln9t9//yTJa6+9lgEDBuT1119P//79U1Pz9q9OK1euzPnnn58ZM2Zk1KhR+Q//4T/kyiuvLOzvsePKpV3XdkS0/v377/SxHXP9W+3t7Zk1a1bGjBmTJNm4cWNaW1t3e05DQ0P+9m//tmPt5ZdfTn19fYYPH56HHnooy5Yty/Lly/OjH/0od955Zz796U/vcf1DH/rQu/1rAwB9gP/9BAD0GUOGDMk555yTb3zjG1m7dm3H+r333puHH344X/nKVzqeN3LkyPz1X/91pk6dmiSpra3N0Ucfnb//+79P8vbZTWeeeWYeffTR3V7niSeeyJFHHpkvfOELOe644/Loo4+mra2tsL/HJz/5ySxevLjjHejuvffeHHjggTnssMP26mvccccd2bp1a9rb2zN79ux873vf2+k5J5xwQn71q19l9erVSZKlS5fmlFNOSWtra775zW9m8eLFmThxYubMmZPa2tq8/PLLna4DACSuaAIA+phvfvObufvuu3Peeedl69at2bp1a4466qjceeedGTp0aMfzPve5z+Wiiy7KTTfd1LE2d+7cfOtb38rkyZOzdevWTJo0KaecckrHLWs7TJo0KQ8//HBOPvnk9OvXLw0NDXnzzTfT0tJSyN9h1KhRmTFjRqZPn5729vYcdNBBufnmm/fqFrXzzz8/1113XT772c+mra0tf/7nf55LL710p+d85CMfyVVXXZVvfOMbKZVKqampyU033ZSBAwfm/PPPz+WXX5677ror++23X/7yL/8yxx13XD7wgQ/scR0AIEmqSnu6NhsAAAAA9pJb5wAAAAAohNAEAAAAQCGEJgAAAAAKITQBAAAAUAihCQAAAIBCCE0AAAAAFEJoAgAAAKAQQhMAAAAAhfj/AFw5Cexjc3i5AAAAAElFTkSuQmCC
+"
+>
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Still not very strong, but let's try applying linear regression.</p>
+
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[206]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">!</span>pip install sklearn
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">linear_model</span> <span class="c1">#for linear regression</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">LinearRegression</span><span class="p">()</span>
+<span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">finances</span><span class="p">[</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">],</span> <span class="n">md_2019</span><span class="p">[</span><span class="s2">&quot;Overall Homeless, 2019&quot;</span><span class="p">])</span>
+<span class="n">predicted</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">finances</span><span class="p">[</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">])</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">finances</span><span class="p">[</span><span class="s2">&quot;Cost of Living Index&quot;</span><span class="p">],</span><span class="n">predicted</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Cost vs Homeless Population&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Cost&quot;</span><span class="p">)</span><span class="n">b</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;People&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stdout output_text">
+<pre>Collecting sklearn
+  Downloading https://files.pythonhosted.org/packages/1e/7a/dbb3be0ce9bd5c8b7e3d87328e79063f8b263b2b1bfa4774cb1147bfcd3f/sklearn-0.0.tar.gz
+Collecting scikit-learn (from sklearn)
+  Downloading https://files.pythonhosted.org/packages/f4/f1/eb2c04ec65461cbf292293908d8cddc05dadce164f94b45345cc4807f812/scikit_learn-0.23.2-cp38-cp38-win32.whl (6.0MB)
+Collecting joblib&gt;=0.11 (from scikit-learn-&gt;sklearn)
+  Downloading https://files.pythonhosted.org/packages/34/5b/bd0f0fb5564183884d8e35b81d06d7ec06a20d1a0c8b4c407f1554691dce/joblib-1.0.0-py3-none-any.whl (302kB)
+Requirement already satisfied: numpy&gt;=1.13.3 in c:\users\aayushi\appdata\local\programs\python\python38-32\lib\site-packages (from scikit-learn-&gt;sklearn) (1.19.4)
+Collecting threadpoolctl&gt;=2.0.0 (from scikit-learn-&gt;sklearn)
+  Downloading https://files.pythonhosted.org/packages/f7/12/ec3f2e203afa394a149911729357aa48affc59c20e2c1c8297a60f33f133/threadpoolctl-2.1.0-py3-none-any.whl
+Requirement already satisfied: scipy&gt;=0.19.1 in c:\users\aayushi\appdata\local\programs\python\python38-32\lib\site-packages (from scikit-learn-&gt;sklearn) (1.5.4)
+Installing collected packages: joblib, threadpoolctl, scikit-learn, sklearn
+  Running setup.py install for sklearn: started
+    Running setup.py install for sklearn: finished with status &#39;done&#39;
+Successfully installed joblib-1.0.0 scikit-learn-0.23.2 sklearn-0.0 threadpoolctl-2.1.0
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>WARNING: You are using pip version 19.2.3, however version 20.3.3 is available.
+You should consider upgrading via the &#39;python -m pip install --upgrade pip&#39; command.
+</pre>
+</div>
+</div>
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+<div class="output_subarea output_text output_error">
+<pre>
+<span class="ansi-red-intense-fg ansi-bold">---------------------------------------------------------------------------</span>
+<span class="ansi-red-intense-fg ansi-bold">ValueError</span>                                Traceback (most recent call last)
+<span class="ansi-green-intense-fg ansi-bold">&lt;ipython-input-206-bc6b66f26998&gt;</span> in <span class="ansi-cyan-fg">&lt;module&gt;</span>
+<span class="ansi-green-fg">      2</span> <span class="ansi-green-intense-fg ansi-bold">from</span> sklearn <span class="ansi-green-intense-fg ansi-bold">import</span> linear_model <span class="ansi-red-intense-fg ansi-bold">#for linear regression</span>
+<span class="ansi-green-fg">      3</span> clf <span class="ansi-yellow-intense-fg ansi-bold">=</span> linear_model<span class="ansi-yellow-intense-fg ansi-bold">.</span>LinearRegression<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">----&gt; 4</span><span class="ansi-yellow-intense-fg ansi-bold"> </span>clf<span class="ansi-yellow-intense-fg ansi-bold">.</span>fit<span class="ansi-yellow-intense-fg ansi-bold">(</span>finances<span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-blue-intense-fg ansi-bold">&#34;Cost of Living Index&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">,</span> md_2019<span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-blue-intense-fg ansi-bold">&#34;Overall Homeless, 2019&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      5</span> predicted <span class="ansi-yellow-intense-fg ansi-bold">=</span> clf<span class="ansi-yellow-intense-fg ansi-bold">.</span>predict<span class="ansi-yellow-intense-fg ansi-bold">(</span>finances<span class="ansi-yellow-intense-fg ansi-bold">[</span><span class="ansi-blue-intense-fg ansi-bold">&#34;Cost of Living Index&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">]</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">      6</span> 
+
+<span class="ansi-green-intense-fg ansi-bold">c:\users\aayushi\appdata\local\programs\python\python38-32\lib\site-packages\sklearn\linear_model\_base.py</span> in <span class="ansi-cyan-fg">fit</span><span class="ansi-blue-intense-fg ansi-bold">(self, X, y, sample_weight)</span>
+<span class="ansi-green-fg">    503</span> 
+<span class="ansi-green-fg">    504</span>         n_jobs_ <span class="ansi-yellow-intense-fg ansi-bold">=</span> self<span class="ansi-yellow-intense-fg ansi-bold">.</span>n_jobs
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 505</span><span class="ansi-yellow-intense-fg ansi-bold">         X, y = self._validate_data(X, y, accept_sparse=[&#39;csr&#39;, &#39;csc&#39;, &#39;coo&#39;],
+</span><span class="ansi-green-fg">    506</span>                                    y_numeric=True, multi_output=True)
+<span class="ansi-green-fg">    507</span> 
+
+<span class="ansi-green-intense-fg ansi-bold">c:\users\aayushi\appdata\local\programs\python\python38-32\lib\site-packages\sklearn\base.py</span> in <span class="ansi-cyan-fg">_validate_data</span><span class="ansi-blue-intense-fg ansi-bold">(self, X, y, reset, validate_separately, **check_params)</span>
+<span class="ansi-green-fg">    430</span>                 y <span class="ansi-yellow-intense-fg ansi-bold">=</span> check_array<span class="ansi-yellow-intense-fg ansi-bold">(</span>y<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>check_y_params<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    431</span>             <span class="ansi-green-intense-fg ansi-bold">else</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 432</span><span class="ansi-yellow-intense-fg ansi-bold">                 </span>X<span class="ansi-yellow-intense-fg ansi-bold">,</span> y <span class="ansi-yellow-intense-fg ansi-bold">=</span> check_X_y<span class="ansi-yellow-intense-fg ansi-bold">(</span>X<span class="ansi-yellow-intense-fg ansi-bold">,</span> y<span class="ansi-yellow-intense-fg ansi-bold">,</span> <span class="ansi-yellow-intense-fg ansi-bold">**</span>check_params<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    433</span>             out <span class="ansi-yellow-intense-fg ansi-bold">=</span> X<span class="ansi-yellow-intense-fg ansi-bold">,</span> y
+<span class="ansi-green-fg">    434</span> 
+
+<span class="ansi-green-intense-fg ansi-bold">c:\users\aayushi\appdata\local\programs\python\python38-32\lib\site-packages\sklearn\utils\validation.py</span> in <span class="ansi-cyan-fg">inner_f</span><span class="ansi-blue-intense-fg ansi-bold">(*args, **kwargs)</span>
+<span class="ansi-green-fg">     70</span>                           FutureWarning)
+<span class="ansi-green-fg">     71</span>         kwargs<span class="ansi-yellow-intense-fg ansi-bold">.</span>update<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">{</span>k<span class="ansi-yellow-intense-fg ansi-bold">:</span> arg <span class="ansi-green-intense-fg ansi-bold">for</span> k<span class="ansi-yellow-intense-fg ansi-bold">,</span> arg <span class="ansi-green-intense-fg ansi-bold">in</span> zip<span class="ansi-yellow-intense-fg ansi-bold">(</span>sig<span class="ansi-yellow-intense-fg ansi-bold">.</span>parameters<span class="ansi-yellow-intense-fg ansi-bold">,</span> args<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">}</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">---&gt; 72</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> f<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     73</span>     <span class="ansi-green-intense-fg ansi-bold">return</span> inner_f
+<span class="ansi-green-fg">     74</span> 
+
+<span class="ansi-green-intense-fg ansi-bold">c:\users\aayushi\appdata\local\programs\python\python38-32\lib\site-packages\sklearn\utils\validation.py</span> in <span class="ansi-cyan-fg">check_X_y</span><span class="ansi-blue-intense-fg ansi-bold">(X, y, accept_sparse, accept_large_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, multi_output, ensure_min_samples, ensure_min_features, y_numeric, estimator)</span>
+<span class="ansi-green-fg">    793</span>         <span class="ansi-green-intense-fg ansi-bold">raise</span> ValueError<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-blue-intense-fg ansi-bold">&#34;y cannot be None&#34;</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">    794</span> 
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 795</span><span class="ansi-yellow-intense-fg ansi-bold">     X = check_array(X, accept_sparse=accept_sparse,
+</span><span class="ansi-green-fg">    796</span>                     accept_large_sparse<span class="ansi-yellow-intense-fg ansi-bold">=</span>accept_large_sparse<span class="ansi-yellow-intense-fg ansi-bold">,</span>
+<span class="ansi-green-fg">    797</span>                     dtype<span class="ansi-yellow-intense-fg ansi-bold">=</span>dtype<span class="ansi-yellow-intense-fg ansi-bold">,</span> order<span class="ansi-yellow-intense-fg ansi-bold">=</span>order<span class="ansi-yellow-intense-fg ansi-bold">,</span> copy<span class="ansi-yellow-intense-fg ansi-bold">=</span>copy<span class="ansi-yellow-intense-fg ansi-bold">,</span>
+
+<span class="ansi-green-intense-fg ansi-bold">c:\users\aayushi\appdata\local\programs\python\python38-32\lib\site-packages\sklearn\utils\validation.py</span> in <span class="ansi-cyan-fg">inner_f</span><span class="ansi-blue-intense-fg ansi-bold">(*args, **kwargs)</span>
+<span class="ansi-green-fg">     70</span>                           FutureWarning)
+<span class="ansi-green-fg">     71</span>         kwargs<span class="ansi-yellow-intense-fg ansi-bold">.</span>update<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">{</span>k<span class="ansi-yellow-intense-fg ansi-bold">:</span> arg <span class="ansi-green-intense-fg ansi-bold">for</span> k<span class="ansi-yellow-intense-fg ansi-bold">,</span> arg <span class="ansi-green-intense-fg ansi-bold">in</span> zip<span class="ansi-yellow-intense-fg ansi-bold">(</span>sig<span class="ansi-yellow-intense-fg ansi-bold">.</span>parameters<span class="ansi-yellow-intense-fg ansi-bold">,</span> args<span class="ansi-yellow-intense-fg ansi-bold">)</span><span class="ansi-yellow-intense-fg ansi-bold">}</span><span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-intense-fg ansi-bold">---&gt; 72</span><span class="ansi-yellow-intense-fg ansi-bold">         </span><span class="ansi-green-intense-fg ansi-bold">return</span> f<span class="ansi-yellow-intense-fg ansi-bold">(</span><span class="ansi-yellow-intense-fg ansi-bold">**</span>kwargs<span class="ansi-yellow-intense-fg ansi-bold">)</span>
+<span class="ansi-green-fg">     73</span>     <span class="ansi-green-intense-fg ansi-bold">return</span> inner_f
+<span class="ansi-green-fg">     74</span> 
+
+<span class="ansi-green-intense-fg ansi-bold">c:\users\aayushi\appdata\local\programs\python\python38-32\lib\site-packages\sklearn\utils\validation.py</span> in <span class="ansi-cyan-fg">check_array</span><span class="ansi-blue-intense-fg ansi-bold">(array, accept_sparse, accept_large_sparse, dtype, order, copy, force_all_finite, ensure_2d, allow_nd, ensure_min_samples, ensure_min_features, estimator)</span>
+<span class="ansi-green-fg">    617</span>             <span class="ansi-red-intense-fg ansi-bold"># If input is 1D raise error</span>
+<span class="ansi-green-fg">    618</span>             <span class="ansi-green-intense-fg ansi-bold">if</span> array<span class="ansi-yellow-intense-fg ansi-bold">.</span>ndim <span class="ansi-yellow-intense-fg ansi-bold">==</span> <span class="ansi-cyan-intense-fg ansi-bold">1</span><span class="ansi-yellow-intense-fg ansi-bold">:</span>
+<span class="ansi-green-intense-fg ansi-bold">--&gt; 619</span><span class="ansi-yellow-intense-fg ansi-bold">                 raise ValueError(
+</span><span class="ansi-green-fg">    620</span>                     <span class="ansi-blue-intense-fg ansi-bold">&#34;Expected 2D array, got 1D array instead:\narray={}.\n&#34;</span>
+<span class="ansi-green-fg">    621</span>                     <span class="ansi-blue-intense-fg ansi-bold">&#34;Reshape your data either using array.reshape(-1, 1) if &#34;</span>
+
+<span class="ansi-red-intense-fg ansi-bold">ValueError</span>: Expected 2D array, got 1D array instead:
+array=[ 76.9         89.3        109.2        118.5        134.8
+ 105.7        115.2        105.8        116.63333333 113.3
+  87.         104.4         94.5         89.925      121.3
+ 139.4       ].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<h1 id="4.-Conclusion">4. Conclusion<a class="anchor-link" href="#4.-Conclusion">&#182;</a></h1>
+</div>
+</div>
+</div>
+<div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
+</div><div class="inner_cell">
+<div class="text_cell_render border-box-sizing rendered_html">
+<p>Overall, it appears that as the income and cost of living per CoC increases, the amount of homeless individuals also increases.</p>
+
+</div>
+</div>
 </div>
     </div>
   </div>
