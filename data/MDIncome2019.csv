@@ -1,0 +1,35 @@
+"CAINC1 Personal Income Summary: Personal Income, Population, Per Capita Personal Income",,
+Per capita personal income (Dollars) 2/ ,,
+Bureau of Economic Analysis ,,
+County,,
+GeoFips,GeoName,2019
+24000,Maryland,64640
+24001,"Allegany, MD",41454
+24003,"Anne Arundel, MD",69035
+24005,"Baltimore, MD",62976
+24009,"Calvert, MD",63976
+24011,"Caroline, MD",46883
+24013,"Carroll, MD",64288
+24015,"Cecil, MD",49749
+24017,"Charles, MD",57774
+24019,"Dorchester, MD",47699
+24021,"Frederick, MD",64147
+24023,"Garrett, MD",47735
+24025,"Harford, MD",60266
+24027,"Howard, MD",79253
+24029,"Kent, MD",63141
+24031,"Montgomery, MD",90139
+24033,"Prince George's, MD",50625
+24035,"Queen Anne's, MD",66733
+24037,"St. Mary's, MD",58582
+24039,"Somerset, MD",31668
+24041,"Talbot, MD",74711
+24043,"Washington, MD",48650
+24045,"Wicomico, MD",42547
+24047,"Worcester, MD",60222
+24510,"Baltimore (Independent City), MD",53378
+Legend / Footnotes:,,
+2/ Per capita personal income was computed using Census Bureau midyear population estimates. Estimates for 2010-2019 reflect county population estimates available as of March 2020.,,
+"Metropolitan Areas are defined (geographically delineated) by the Office of Management and Budget (OMB) bulletin no. 20-01 issued March 6, 2020.",,
+Note-- All dollar estimates are in thousands of current dollars (not adjusted for inflation). Calculations are performed on unrounded data.,,
+"Last updated: November 17, 2020-- new statistics for 2019; revised statistics for 2010-2018.",,
